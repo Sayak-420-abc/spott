@@ -13,7 +13,6 @@ const EventCard = ({
   event,
   onClick,
   onDelete,
-  
   action = null,
   variant = "grid",
   className = "",

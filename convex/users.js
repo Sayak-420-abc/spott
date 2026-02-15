@@ -1,4 +1,6 @@
+import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 export const store = mutation({
   args: {},
@@ -22,7 +24,10 @@ export const store = mutation({
     if (user !== null) {
       // If we've seen this identity before but the name has changed, patch the value.
       if (user.name !== identity.name) {
-        await ctx.db.patch(user._id, { name: identity.name, updatedAt: Date.now() });
+        await ctx.db.patch(user._id, {
+          name: identity.name,
+          updatedAt: Date.now(),
+        });
       }
       return user._id;
     }
@@ -40,24 +45,51 @@ export const store = mutation({
   },
 });
 
-export const getCurrentUser= query({
-    handler: async(ctx)=>{
-        const identity= await ctx.auth.getUserIdentity();
-        if(!identity){
-            return null;
-        }
+export const getCurrentUser = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
 
-        const user= await ctx.db
-            .query("users")
-            .withIndex("by_token",(q)=>
-            q.eq("tokenIdentifier",identity.tokenIdentifier)
-            )
-            .unique();
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
 
-        if(!user){
-            throw new Error("User not found")
-        }
+    if (!user) {
+      throw new Error("User not found");
+    }
 
-        return user;
-    },
+    return user;
+  },
+});
+
+export const completeOnboarding = mutation({
+  args: {
+    location: v.object({
+      city: v.string(),
+      state: v.optional(v.string()), // Added state field
+      country: v.string(),
+    }),
+    interests: v.array(v.string()), // Min 3 categories
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.runQuery(internal.users.getCurrentUser);
+
+    if (!user) {
+      throw new Error("User must exist before onboarding");
+    }
+
+    await ctx.db.patch(user._id, {
+      location: args.location,
+      interests: args.interests,
+      hasCompletedOnboarding: true,
+      updatedAt: Date.now(),
+    });
+
+    return user._id;
+  },
 });

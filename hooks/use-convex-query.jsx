@@ -36,7 +36,7 @@ export const useConvexMutation = (mutation, ...args) => {
   const mutationFn = useMutation(mutation);
 
   const [data, setData] = useState(undefined);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const mutate= async(...args)=>{
