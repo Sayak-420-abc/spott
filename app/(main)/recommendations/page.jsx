@@ -19,12 +19,7 @@ import {
   Info,
   Heart,
   SlidersHorizontal,
-  Plus,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/data";
@@ -79,6 +74,7 @@ export default function RecommendationsPage() {
     if (currentUser) {
       loadRecommendations();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const toggleInterest = (id) => {
@@ -89,9 +85,9 @@ export default function RecommendationsPage() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center">
-        <Loader2 className="w-10 h-10 animate-spin text-purple-500" />
-        <p className="text-muted-foreground text-sm">Loading user account details...</p>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center bg-[var(--bg-primary)]">
+        <Loader2 className="w-10 h-10 animate-spin text-[var(--color-primary)]" />
+        <p className="text-[var(--text-secondary)] font-bold uppercase text-xs">Loading user account details...</p>
       </div>
     );
   }
@@ -99,29 +95,28 @@ export default function RecommendationsPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
       {/* Header Info */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b-2 border-[var(--border)]">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight bg-linear-to-r from-purple-400 via-pink-500 to-orange-400 bg-clip-text text-transparent flex items-center gap-3">
-            <Sparkles className="w-8 h-8 text-purple-400 animate-pulse" />
+          <h1 className="text-4xl font-black font-[var(--font-display)] uppercase text-[var(--text-primary)] flex items-center gap-3">
+            <Sparkles className="w-8 h-8 text-[var(--color-primary)] animate-pulse" />
             AI Recommendations
           </h1>
-          <p className="text-muted-foreground mt-2 text-sm md:text-base">
+          <p className="text-[var(--text-secondary)] mt-2 text-sm font-semibold uppercase">
             Select your preferences and hobbies to discover matched campus activities.
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
+        <div className="flex gap-3 flex-wrap">
+          <button
             onClick={() => setShowPreferences(!showPreferences)}
-            className="border-gray-800 text-gray-300 hover:text-white rounded-xl flex items-center gap-2"
+            className="font-bold text-xs uppercase px-4 py-2.5 border-2 border-[var(--border)] bg-[var(--bg-card)] hover:bg-[var(--color-accent)] hover:text-[var(--text-primary)] transition-all shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] cursor-pointer inline-flex items-center gap-1.5 self-start"
           >
             <SlidersHorizontal className="w-4 h-4" />
             Preferences Panel
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={loadRecommendations}
             disabled={loading}
-            className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl shadow-lg shadow-purple-900/30 flex items-center gap-2"
+            className="font-bold text-xs uppercase px-4 py-2.5 border-2 border-[var(--border)] bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-all shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] cursor-pointer inline-flex items-center gap-1.5 self-start disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -129,101 +124,103 @@ export default function RecommendationsPage() {
               <RefreshCw className="w-4 h-4" />
             )}
             Re-compute matches
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Preferences Selection Panel */}
       {showPreferences && (
-        <Card className="border border-gray-800 bg-zinc-950/40 backdrop-blur-xl rounded-2xl overflow-hidden p-6 animate-in fade-in duration-300">
-          <CardContent className="p-0 space-y-6">
-            <div className="space-y-2">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
-                <Heart className="w-4 h-4 text-purple-400" />
-                Select Hobbies & Event Interests
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Toggle categories to adjust recommendations based on your current interests:
-              </p>
-            </div>
+        <div className="border-2 border-[var(--border)] bg-[var(--bg-card)] shadow-[4px_4px_0px_0px_var(--shadow-color)] p-6 space-y-6 animate-fade-in">
+          <div className="space-y-2">
+            <h3 className="text-sm font-black uppercase text-[var(--color-primary)] flex items-center gap-1.5">
+              <Heart className="w-4 h-4 text-[var(--color-primary)]" />
+              Select Hobbies & Event Interests
+            </h3>
+            <p className="text-xs font-bold text-[var(--text-secondary)] uppercase">
+              Toggle categories to adjust recommendations based on your current interests:
+            </p>
+          </div>
 
-            {/* Grid of Interests */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-              {CATEGORIES.map((cat) => {
-                const isSelected = selectedInterests.includes(cat.id);
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => toggleInterest(cat.id)}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold text-left transition-all cursor-pointer ${
-                      isSelected
-                        ? "bg-purple-600/10 border-purple-500 text-purple-300 shadow-md shadow-purple-900/20"
-                        : "bg-black/30 border-gray-900 text-gray-400 hover:border-gray-800 hover:text-gray-300"
-                    }`}
-                  >
-                    <span>{cat.icon}</span>
-                    <span className="truncate">{cat.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+          {/* Grid of Interests */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {CATEGORIES.map((cat) => {
+              const isSelected = selectedInterests.includes(cat.id);
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => toggleInterest(cat.id)}
+                  className={`flex items-center gap-2 px-3 py-2.5 border-2 border-[var(--border)] text-xs font-black uppercase text-left transition-all cursor-pointer shadow-[2px_2px_0px_0px_var(--shadow-color)] ${
+                    isSelected
+                      ? "bg-[var(--color-primary)] text-white translate-y-[1px] shadow-[1px_1px_0px_0px_var(--shadow-color)]"
+                      : "bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[var(--border)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
+                  }`}
+                >
+                  <span>{cat.icon}</span>
+                  <span className="truncate">{cat.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
-            {/* Custom Skills/Keywords Override */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
-                <Brain className="w-4 h-4 text-purple-400" />
-                Skills & Target Keywords
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Enter target keywords (e.g. React, public speaking, cooking) to find matching events:
-              </p>
-              <Input
-                type="text"
-                placeholder="React, Frontend, Photography, Leadership..."
-                value={customSkills}
-                onChange={(e) => setCustomSkills(e.target.value)}
-                className="bg-black/30 border-gray-900 text-white rounded-xl focus-visible:ring-purple-500"
-              />
-            </div>
+          {/* Custom Skills/Keywords Override */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-black uppercase text-[var(--color-primary)] flex items-center gap-1.5">
+              <Brain className="w-4 h-4 text-[var(--color-primary)]" />
+              Skills & Target Keywords
+            </h3>
+            <p className="text-xs font-bold text-[var(--text-secondary)] uppercase">
+              Enter target keywords (e.g. React, public speaking, cooking) to find matching events:
+            </p>
+            <input
+              type="text"
+              placeholder="React, Frontend, Photography, Leadership..."
+              value={customSkills}
+              onChange={(e) => setCustomSkills(e.target.value)}
+              className="w-full bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] text-xs font-bold px-4 py-3 outline-none focus:border-[var(--color-primary)] focus:shadow-[2px_2px_0px_0px_var(--shadow-color)] transition-all placeholder:text-[var(--text-muted)]"
+            />
+          </div>
 
-            {/* Compute Overrides Button */}
-            <Button
-              onClick={loadRecommendations}
-              disabled={loading}
-              className="w-full bg-linear-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-5 rounded-xl flex items-center justify-center gap-2 shadow-lg"
-            >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Sparkles className="w-5 h-5" />
-              )}
-              Update Recommendations Feed
-            </Button>
-          </CardContent>
-        </Card>
+          {/* Compute Overrides Button */}
+          <button
+            onClick={loadRecommendations}
+            disabled={loading}
+            className="w-full py-4 text-xs font-black uppercase border-2 border-[var(--border)] bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-all cursor-pointer shadow-[3px_3px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Sparkles className="w-5 h-5" />
+            )}
+            Update Recommendations Feed
+          </button>
+        </div>
       )}
 
       {/* Main Feed */}
       {loading && recs.length === 0 ? (
         <div className="min-h-[30vh] flex flex-col items-center justify-center gap-4 text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-purple-500" />
-          <p className="text-muted-foreground text-sm">Computing AI matches from custom preferences...</p>
+          <Loader2 className="w-10 h-10 animate-spin text-[var(--color-primary)]" />
+          <p className="text-[var(--text-secondary)] font-bold uppercase text-xs">Computing AI matches from custom preferences...</p>
         </div>
       ) : recs.length === 0 ? (
-        <Card className="border border-dashed border-gray-800 bg-gray-950/20 backdrop-blur-md rounded-2xl p-10 text-center">
-          <CardContent className="space-y-4 pt-6">
-            <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto text-purple-400">
+        <div className="border-2 border-dashed border-[var(--border)] bg-[var(--bg-card)] p-12 text-center shadow-[4px_4px_0px_0px_var(--shadow-color)] max-w-xl mx-auto">
+          <div className="space-y-4">
+            <div className="w-16 h-16 bg-[var(--bg-elevated)] border-2 border-[var(--border)] shadow-[2px_2px_0px_0px_var(--shadow-color)] flex items-center justify-center mx-auto text-[var(--color-primary)] mb-4">
               <Brain className="w-8 h-8" />
             </div>
-            <h3 className="text-lg font-semibold text-white">No active matches found</h3>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            <h3 className="text-lg font-black uppercase text-[var(--text-primary)]">No active matches found</h3>
+            <p className="text-sm font-semibold text-[var(--text-secondary)] uppercase leading-relaxed">
               No active events match these custom preference configurations. Try selecting more categories or adjusting keywords.
             </p>
-            <Button asChild variant="outline" className="mt-4">
-              <Link href="/explore">Explore All Events</Link>
-            </Button>
-          </CardContent>
-        </Card>
+            <Link
+              href="/explore"
+              className="btn-primary text-xs shadow-[2px_2px_0px_0px_var(--shadow-color)] inline-flex items-center gap-1.5"
+              style={{ textDecoration: "none" }}
+            >
+              Explore All Events
+            </Link>
+          </div>
+        </div>
       ) : (
         <div className="flex flex-col gap-6">
           {recs.map((rec, idx) => (
@@ -238,62 +235,63 @@ export default function RecommendationsPage() {
 function RecommendationCard({ rec, idx }) {
   const [open, setOpen] = useState(false);
   const percent = Math.round(rec.finalScore * 100);
+
   const color =
     rec.finalScore >= 0.75
-      ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/5"
+      ? "bg-[var(--color-success)] text-[var(--text-primary)]"
       : rec.finalScore >= 0.55
-      ? "text-indigo-400 border-indigo-500/30 bg-indigo-500/5"
-      : "text-amber-400 border-amber-500/30 bg-amber-500/5";
+      ? "bg-[var(--color-primary)] text-white"
+      : "bg-[var(--color-accent)] text-[var(--text-primary)]";
 
   const ringColor =
     rec.finalScore >= 0.75
-      ? "stroke-emerald-400"
+      ? "stroke-[var(--color-success)]"
       : rec.finalScore >= 0.55
-      ? "stroke-indigo-400"
-      : "stroke-amber-400";
+      ? "stroke-[var(--color-primary)]"
+      : "stroke-[var(--color-accent)]";
 
   const showAIPitch = !!rec.aiMessage;
 
   return (
-    <div className="group border border-gray-800/60 hover:border-purple-500/40 bg-zinc-950/45 backdrop-blur-xl rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-900/10">
+    <div className="group border-2 border-[var(--border)] bg-[var(--bg-card)] p-6 transition-all shadow-[4px_4px_0px_0px_var(--shadow-color)] hover:shadow-[6px_6px_0px_0px_var(--color-secondary)]">
       <div className="flex flex-col md:flex-row justify-between gap-6">
         <div className="flex-1 space-y-4">
-          <div className="flex items-center gap-3">
-            <span className={`text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-md border ${color}`}>
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 border-2 border-[var(--border)] shadow-[1px_1px_0px_0px_var(--shadow-color)] ${color}`}>
               #{idx + 1} Best Fit &middot; {percent}% Match
             </span>
-            <Badge variant="outline" className="text-xs text-gray-400 border-gray-800 uppercase font-mono">
+            <span className="inline-flex items-center px-2 py-0.5 border border-[var(--border)] text-[9px] font-mono font-bold uppercase tracking-wider bg-[var(--bg-elevated)] text-[var(--text-secondary)] shadow-[1px_1px_0px_0px_var(--shadow-color)]">
               {rec.event.category}
-            </Badge>
+            </span>
           </div>
 
           <Link href={`/events/${rec.event.slug}`}>
-            <h3 className="text-xl font-bold text-white group-hover:text-purple-300 transition-colors mt-2 leading-snug">
+            <h3 className="text-xl font-black text-[var(--text-primary)] hover:text-[var(--color-primary)] transition-colors mt-2 uppercase font-[var(--font-display)]">
               {rec.event.title}
             </h3>
           </Link>
 
-          {/* AI Advisor Engaging One-Sentence Message */}
+          {/* AI Advisor Engaging Message */}
           {showAIPitch && (
-            <div className="relative border-l-2 border-purple-500 bg-purple-950/20 px-4 py-3 rounded-r-xl my-3 text-sm">
-              <span className="absolute -top-2.5 left-3 bg-purple-600 text-[10px] text-white px-2 py-0.5 rounded-full font-bold uppercase flex items-center gap-1">
+            <div className="relative border-2 border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] mt-3 text-xs leading-relaxed">
+              <span className="absolute -top-3.5 left-3 bg-[var(--color-primary)] border-2 border-[var(--border)] text-[9px] text-white px-2 py-0.5 font-black uppercase flex items-center gap-1 shadow-[1.5px_1.5px_0px_0px_var(--shadow-color)]">
                 <Sparkles className="w-2.5 h-2.5" /> AI Advisor
               </span>
-              <p className="text-purple-200 italic font-medium leading-relaxed mt-1">
+              <p className="text-[var(--text-primary)] italic font-semibold leading-relaxed mt-1">
                 &quot;{rec.aiMessage}&quot;
               </p>
             </div>
           )}
 
-          <div className="flex items-center gap-1.5 text-xs text-purple-300 font-medium">
+          <div className="flex items-center gap-1.5 text-xs text-[var(--color-primary)] font-black uppercase">
             <Info className="w-3.5 h-3.5" />
             <span>{rec.explanation[0]}</span>
           </div>
 
           {/* Meta Icons */}
-          <div className="grid grid-cols-2 md:flex md:items-center gap-4 text-xs text-muted-foreground pt-2">
+          <div className="grid grid-cols-2 md:flex md:items-center gap-4 text-xs font-bold uppercase text-[var(--text-secondary)] pt-2">
             <div className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-gray-500" />
+              <Calendar className="w-4 h-4 text-[var(--color-primary)]" />
               <span>
                 {new Date(rec.event.startDate).toLocaleDateString(undefined, {
                   month: "short",
@@ -302,11 +300,11 @@ function RecommendationCard({ rec, idx }) {
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-gray-500" />
+              <MapPin className="w-4 h-4 text-[var(--color-secondary)]" />
               <span className="truncate max-w-[150px]">{rec.event.city}</span>
             </div>
             {rec.registeredFriends.length > 0 && (
-              <div className="flex items-center gap-1.5 text-emerald-400">
+              <div className="flex items-center gap-1.5 text-[var(--color-success)] bg-[var(--bg-elevated)] border border-[var(--border)] px-1.5 py-0.5 shadow-[1px_1px_0px_0px_var(--shadow-color)]">
                 <Users className="w-4 h-4" />
                 <span>
                   {rec.registeredFriends.length} friend
@@ -325,7 +323,7 @@ function RecommendationCard({ rec, idx }) {
                 cx="40"
                 cy="40"
                 r="34"
-                className="stroke-gray-800"
+                className="stroke-[var(--bg-elevated)]"
                 strokeWidth="6"
                 fill="transparent"
               />
@@ -341,59 +339,63 @@ function RecommendationCard({ rec, idx }) {
                 strokeLinecap="round"
               />
             </svg>
-            <span className="text-lg font-extrabold text-white">{percent}%</span>
+            <span className="text-base font-black text-[var(--text-primary)] font-[var(--font-display)]">{percent}%</span>
           </div>
         </div>
       </div>
 
-      <div className="h-[1px] bg-gray-900/60 my-4" />
+      <div className="h-[2px] bg-[var(--border)] my-4" />
 
       <div className="mt-4 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <button
             onClick={() => setOpen(!open)}
-            className="text-xs text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1 font-semibold cursor-pointer"
+            className="text-xs text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors flex items-center gap-1 font-black uppercase cursor-pointer"
           >
             {open ? "Hide Match Breakdown" : "Reveal Match Breakdown"}
             {open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
 
-          <Button asChild size="sm" className="bg-purple-700/80 hover:bg-purple-600 text-white rounded-lg px-4">
-            <Link href={`/events/${rec.event.slug}`}>View Event Details</Link>
-          </Button>
+          <Link
+            href={`/events/${rec.event.slug}`}
+            className="font-bold text-xs uppercase px-4 py-2 border-2 border-[var(--border)] bg-[var(--bg-card)] hover:bg-[var(--color-accent)] text-[var(--text-primary)] transition-all shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] cursor-pointer"
+            style={{ textDecoration: "none" }}
+          >
+            View Event Details
+          </Link>
         </div>
 
         {open && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 bg-gray-950/40 p-4 rounded-xl border border-gray-900 text-center mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 bg-[var(--bg-elevated)] p-4 border-2 border-[var(--border)] shadow-[3px_3px_0px_0px_var(--shadow-color)] text-center mt-2 animate-fade-in">
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center justify-center gap-1">
-                <Brain className="w-3 h-3 text-purple-400" /> Semantic
+              <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-wider flex items-center justify-center gap-1">
+                <Brain className="w-3 h-3 text-[var(--color-primary)]" /> Semantic
               </p>
-              <p className="text-sm font-extrabold text-white">{Math.round(rec.scores.semantic * 100)}%</p>
+              <p className="text-sm font-black text-[var(--text-primary)] font-[var(--font-display)]">{Math.round(rec.scores.semantic * 100)}%</p>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center justify-center gap-1">
-                <Users className="w-3 h-3 text-emerald-400" /> Social
+              <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-wider flex items-center justify-center gap-1">
+                <Users className="w-3 h-3 text-[var(--color-success)]" /> Social
               </p>
-              <p className="text-sm font-extrabold text-white">{Math.round(rec.scores.social * 100)}%</p>
+              <p className="text-sm font-black text-[var(--text-primary)] font-[var(--font-display)]">{Math.round(rec.scores.social * 100)}%</p>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center justify-center gap-1">
-                <TrendingUp className="w-3 h-3 text-pink-400" /> Trend
+              <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-wider flex items-center justify-center gap-1">
+                <TrendingUp className="w-3 h-3 text-[var(--color-secondary)]" /> Trend
               </p>
-              <p className="text-sm font-extrabold text-white">{Math.round(rec.scores.trend * 100)}%</p>
+              <p className="text-sm font-black text-[var(--text-primary)] font-[var(--font-display)]">{Math.round(rec.scores.trend * 100)}%</p>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center justify-center gap-1">
-                <Clock className="w-3 h-3 text-amber-400" /> Urgency
+              <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-wider flex items-center justify-center gap-1">
+                <Clock className="w-3 h-3 text-[var(--color-accent)]" /> Urgency
               </p>
-              <p className="text-sm font-extrabold text-white">{Math.round(rec.scores.deadline * 100)}%</p>
+              <p className="text-sm font-black text-[var(--text-primary)] font-[var(--font-display)]">{Math.round(rec.scores.deadline * 100)}%</p>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider flex items-center justify-center gap-1">
-                <Zap className="w-3 h-3 text-sky-400" /> Freshness
+              <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-wider flex items-center justify-center gap-1">
+                <Zap className="w-3 h-3 text-sky-500" /> Freshness
               </p>
-              <p className="text-sm font-extrabold text-white">{Math.round(rec.scores.freshness * 100)}%</p>
+              <p className="text-sm font-black text-[var(--text-primary)] font-[var(--font-display)]">{Math.round(rec.scores.freshness * 100)}%</p>
             </div>
           </div>
         )}

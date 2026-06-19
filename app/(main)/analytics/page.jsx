@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect, useMemo } from "react";
 import {
@@ -49,7 +49,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 function fmtDate(ts) {
@@ -63,34 +62,24 @@ function fmtDate(ts) {
   });
 }
 
-function fmtShortDate(ts) {
-  if (!ts) return "—";
-  return new Date(ts).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 function StatCard({ label, value, icon: Icon, iconColor, barColor, barPercent, sub }) {
   return (
-    <div className="border border-gray-800 bg-zinc-950/60 backdrop-blur-xl p-5 rounded-2xl flex flex-col gap-2 hover:border-gray-700 transition-colors">
-      <div className="flex items-center justify-between text-xs text-gray-500 font-semibold uppercase tracking-widest">
+    <div className="cyber-card p-5 bg-[var(--bg-card)] border-2 border-[var(--border)] shadow-[4px_4px_0px_0px_var(--shadow-color)] flex flex-col gap-2">
+      <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] font-bold uppercase tracking-wider">
         <span>{label}</span>
         <Icon className={`w-4 h-4 ${iconColor}`} />
       </div>
-      <p className="text-3xl font-extrabold text-white mt-1 tabular-nums">{value}</p>
+      <p className="text-3xl font-black text-[var(--text-primary)] mt-1 tabular-nums font-[var(--font-display)] uppercase">{value}</p>
       {barColor !== undefined && (
-        <div className="h-1.5 bg-white/5 rounded-full mt-1 overflow-hidden">
+        <div className="h-2 bg-[var(--bg-elevated)] border-2 border-[var(--border)] mt-1 overflow-hidden">
           <div
-            className={`h-full ${barColor} rounded-full transition-all duration-700`}
+            className="h-full bg-[var(--color-primary)] transition-all duration-700"
             style={{ width: `${Math.min(100, barPercent ?? 0)}%` }}
           />
         </div>
       )}
-      {sub && <span className="text-[10px] text-gray-500 mt-1">{sub}</span>}
+      {sub && <span className="text-[10px] text-[var(--text-secondary)] font-bold uppercase mt-1">{sub}</span>}
     </div>
   );
 }
@@ -99,13 +88,13 @@ function StatCard({ label, value, icon: Icon, iconColor, barColor, barPercent, s
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-zinc-900 border border-gray-700 rounded-xl px-4 py-3 text-xs text-white shadow-xl">
-      <p className="font-bold mb-1 text-gray-400">{label}</p>
+    <div className="bg-[var(--bg-card)] border-2 border-[var(--border)] shadow-[3px_3px_0px_0px_var(--shadow-color)] px-4 py-3 text-xs text-[var(--text-primary)]">
+      <p className="font-black mb-1 text-[var(--text-secondary)] uppercase">{label}</p>
       {payload.map((p) => (
-        <div key={p.dataKey} className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-          <span className="capitalize">{p.dataKey}:</span>
-          <span className="font-bold">{p.value}</span>
+        <div key={p.dataKey} className="flex items-center gap-2 mt-1">
+          <div className="w-2.5 h-2.5 border border-[var(--border)]" style={{ backgroundColor: p.color }} />
+          <span className="capitalize font-bold text-[var(--text-secondary)]">{p.name || p.dataKey}:</span>
+          <span className="font-black text-[var(--text-primary)]">{p.value}</span>
         </div>
       ))}
     </div>
@@ -117,18 +106,18 @@ function TabBtn({ active, onClick, icon: Icon, label, count }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+      className={`flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase border-2 border-[var(--border)] transition-all cursor-pointer ${
         active
-          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-900/40"
-          : "bg-zinc-900 text-gray-400 hover:text-white hover:bg-zinc-800 border border-gray-800"
+          ? "bg-[var(--color-primary)] text-white shadow-[2px_2px_0px_0px_var(--shadow-color)] translate-y-[-1px]"
+          : "bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] shadow-[1px_1px_0px_0px_var(--shadow-color)]"
       }`}
     >
-      <Icon className="w-4 h-4" />
+      <Icon className="w-3.5 h-3.5" />
       {label}
       {count !== undefined && (
         <span
-          className={`text-xs px-1.5 py-0.5 rounded-full font-bold tabular-nums ${
-            active ? "bg-white/20 text-white" : "bg-white/5 text-gray-500"
+          className={`text-[9px] px-1.5 py-0.5 border border-[var(--border)] font-black tabular-nums transition-colors ${
+            active ? "bg-white text-[var(--text-primary)]" : "bg-[var(--bg-elevated)] text-[var(--text-secondary)]"
           }`}
         >
           {count}
@@ -144,13 +133,13 @@ function SortTh({ label, field, sort, onSort }) {
   return (
     <th
       onClick={() => onSort(field)}
-      className="text-left text-xs font-semibold text-gray-500 uppercase tracking-widest py-3 px-4 cursor-pointer select-none hover:text-gray-300 transition-colors whitespace-nowrap"
+      className="text-left text-xs font-black text-[var(--text-secondary)] uppercase tracking-wider py-3 px-4 cursor-pointer select-none hover:text-[var(--text-primary)] transition-colors whitespace-nowrap"
     >
       <span className="flex items-center gap-1">
         {label}
-        <span className="flex flex-col -space-y-1 ml-1">
-          <ChevronUp className={`w-2.5 h-2.5 ${active && sort.dir === "asc" ? "text-indigo-400" : "text-gray-700"}`} />
-          <ChevronDown className={`w-2.5 h-2.5 ${active && sort.dir === "desc" ? "text-indigo-400" : "text-gray-700"}`} />
+        <span className="flex flex-col -space-y-0.5 ml-1">
+          <ChevronUp className={`w-2.5 h-2.5 ${active && sort.dir === "asc" ? "text-[var(--color-primary)]" : "text-[var(--text-muted)]"}`} />
+          <ChevronDown className={`w-2.5 h-2.5 ${active && sort.dir === "desc" ? "text-[var(--color-primary)]" : "text-[var(--text-muted)]"}`} />
         </span>
       </span>
     </th>
@@ -159,17 +148,17 @@ function SortTh({ label, field, sort, onSort }) {
 
 // ─── Interaction type badge ───────────────────────────────────────────────────
 const INTERACTION_STYLES = {
-  viewed: { label: "View", cls: "bg-sky-500/10 text-sky-400 border-sky-500/20", icon: Eye },
-  clicked: { label: "Click", cls: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20", icon: MousePointerClick },
-  bookmarked: { label: "Bookmark", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20", icon: Bookmark },
-  shared: { label: "Share", cls: "bg-teal-500/10 text-teal-400 border-teal-500/20", icon: Share2 },
+  viewed: { label: "View", cls: "bg-[var(--bg-card)] text-sky-500", icon: Eye },
+  clicked: { label: "Click", cls: "bg-[var(--bg-card)] text-[var(--color-primary)]", icon: MousePointerClick },
+  bookmarked: { label: "Bookmark", cls: "bg-[var(--bg-card)] text-[var(--color-accent)]", icon: Bookmark },
+  shared: { label: "Share", cls: "bg-[var(--bg-card)] text-[var(--color-secondary)]", icon: Share2 },
 };
 
 function InteractionBadge({ type }) {
-  const style = INTERACTION_STYLES[type] ?? { label: type, cls: "bg-gray-800 text-gray-400 border-gray-700", icon: Activity };
+  const style = INTERACTION_STYLES[type] ?? { label: type, cls: "bg-[var(--bg-card)] text-[var(--text-secondary)]", icon: Activity };
   const BadgeIcon = style.icon;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${style.cls}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-black uppercase border-2 border-[var(--border)] shadow-[1px_1px_0px_0px_var(--shadow-color)] ${style.cls}`}>
       <BadgeIcon className="w-3 h-3" />
       {style.label}
     </span>
@@ -192,7 +181,7 @@ function exportCSV(rows, headers, filename) {
 function EmptyTable({ message }) {
   return (
     <tr>
-      <td colSpan={99} className="py-12 text-center text-sm text-gray-600">
+      <td colSpan={99} className="py-12 text-center text-sm font-semibold text-[var(--text-secondary)]">
         {message}
       </td>
     </tr>
@@ -230,7 +219,7 @@ function RegistrationsTable({ rows }) {
   }, [rows, sort, search, statusFilter]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         {/* Status filter pills */}
         <div className="flex items-center gap-2">
@@ -242,12 +231,12 @@ function RegistrationsTable({ rows }) {
             <button
               key={key}
               onClick={() => setStatusFilter(key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 border-2 border-[var(--border)] text-xs font-black uppercase transition-all cursor-pointer shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] ${
                 statusFilter === key
                   ? key === "cancelled"
-                    ? "bg-red-700 text-white"
-                    : "bg-indigo-600 text-white"
-                  : "bg-zinc-900 text-gray-500 hover:text-white border border-gray-800"
+                    ? "bg-[var(--color-danger)] text-white"
+                    : "bg-[var(--color-primary)] text-white"
+                  : "bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
               }`}
               title={key === "all" ? "Matches the total document count in your Convex dashboard" : undefined}
             >
@@ -258,12 +247,12 @@ function RegistrationsTable({ rows }) {
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="w-3.5 h-3.5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-[var(--text-secondary)] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search attendees…"
-              className="bg-zinc-900 border border-gray-800 text-white text-sm rounded-xl pl-8 pr-3 py-2 outline-none focus:border-indigo-600 transition-colors placeholder:text-gray-600 w-52"
+              className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] text-xs font-semibold px-8 py-2 outline-none focus:border-[var(--color-primary)] focus:shadow-[2px_2px_0px_0px_var(--shadow-color)] transition-all placeholder:text-[var(--text-muted)] w-52"
             />
           </div>
           <button
@@ -274,7 +263,7 @@ function RegistrationsTable({ rows }) {
                 "registrations.csv"
               )
             }
-            className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-xl border border-gray-800 text-gray-400 hover:text-white hover:border-gray-600 transition-all whitespace-nowrap"
+            className="flex items-center gap-1.5 text-xs font-black uppercase px-3.5 py-2 border-2 border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--color-accent)] hover:translate-y-[-1px] active:translate-y-[1px] transition-all cursor-pointer shadow-[2px_2px_0px_0px_var(--shadow-color)] whitespace-nowrap"
           >
             <Download className="w-3.5 h-3.5" />
             Export CSV
@@ -282,9 +271,9 @@ function RegistrationsTable({ rows }) {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800">
-        <table className="w-full text-sm">
-          <thead className="bg-zinc-900/80">
+      <div className="overflow-x-auto border-2 border-[var(--border)] shadow-[3px_3px_0px_0px_var(--shadow-color)] bg-[var(--bg-card)]">
+        <table className="w-full text-xs">
+          <thead className="bg-[var(--bg-elevated)] border-b-2 border-[var(--border)]">
             <tr>
               <SortTh label="Attendee" field="attendeeName" sort={sort} onSort={onSort} />
               <SortTh label="Email" field="attendeeEmail" sort={sort} onSort={onSort} />
@@ -292,23 +281,23 @@ function RegistrationsTable({ rows }) {
               <SortTh label="Check-In" field="checkedIn" sort={sort} onSort={onSort} />
               <SortTh label="Registered" field="registeredAt" sort={sort} onSort={onSort} />
               <SortTh label="Checked In At" field="checkedInAt" sort={sort} onSort={onSort} />
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-widest py-3 px-4">QR Code</th>
+              <th className="text-left text-xs font-black text-[var(--text-secondary)] uppercase tracking-wider py-3 px-4">QR Code</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-900">
+          <tbody className="divide-y divide-[var(--border)]">
             {filtered.length === 0 ? (
               <EmptyTable message="No registrations found." />
             ) : (
               filtered.map((r) => (
-                <tr key={r._id} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3 px-4 font-medium text-white">{r.attendeeName}</td>
-                  <td className="py-3 px-4 text-gray-400">{r.attendeeEmail}</td>
+                <tr key={r._id} className="hover:bg-[var(--bg-elevated)]/30 transition-colors">
+                  <td className="py-3 px-4 font-extrabold text-[var(--text-primary)]">{r.attendeeName}</td>
+                  <td className="py-3 px-4 font-semibold text-[var(--text-secondary)]">{r.attendeeEmail}</td>
                   <td className="py-3 px-4">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold border ${
+                      className={`inline-flex items-center px-2 py-0.5 text-[10px] font-black uppercase border border-[var(--border)] shadow-[1px_1px_0px_0px_var(--shadow-color)] ${
                         r.status === "confirmed"
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                          : "bg-red-500/10 text-red-400 border-red-500/20"
+                          ? "bg-[var(--color-success)] text-[var(--text-primary)]"
+                          : "bg-[var(--color-danger)] text-white"
                       }`}
                     >
                       {r.status}
@@ -316,15 +305,15 @@ function RegistrationsTable({ rows }) {
                   </td>
                   <td className="py-3 px-4">
                     {r.checkedIn ? (
-                      <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400" />
+                      <CheckCircle2 className="w-5 h-5 text-[var(--color-success)]" />
                     ) : (
-                      <XCircle className="w-4.5 h-4.5 text-gray-700" />
+                      <XCircle className="w-5 h-5 text-[var(--text-muted)]" />
                     )}
                   </td>
-                  <td className="py-3 px-4 text-gray-500 text-xs whitespace-nowrap">{fmtDate(r.registeredAt)}</td>
-                  <td className="py-3 px-4 text-gray-500 text-xs whitespace-nowrap">{r.checkedInAt ? fmtDate(r.checkedInAt) : <span className="text-gray-700">—</span>}</td>
+                  <td className="py-3 px-4 font-bold text-[var(--text-secondary)] whitespace-nowrap">{fmtDate(r.registeredAt)}</td>
+                  <td className="py-3 px-4 font-bold text-[var(--text-secondary)] whitespace-nowrap">{r.checkedInAt ? fmtDate(r.checkedInAt) : <span className="text-[var(--text-muted)]">—</span>}</td>
                   <td className="py-3 px-4">
-                    <code className="text-[10px] bg-gray-900 border border-gray-800 text-gray-400 px-2 py-0.5 rounded-md font-mono">
+                    <code className="text-[10px] bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-primary)] px-2 py-0.5 font-mono font-bold">
                       {r.qrCode}
                     </code>
                   </td>
@@ -334,7 +323,7 @@ function RegistrationsTable({ rows }) {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-gray-600 text-right">{filtered.length} of {rows.length} records</p>
+      <p className="text-xs font-bold text-[var(--text-secondary)] text-right">{filtered.length} of {rows.length} records</p>
     </div>
   );
 }
@@ -361,17 +350,17 @@ function InteractionsTable({ rows }) {
   const types = ["all", "viewed", "clicked", "bookmarked", "shared"];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           {types.map((t) => (
             <button
               key={t}
               onClick={() => setFilter(t)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all capitalize ${
+              className={`px-3 py-1.5 border-2 border-[var(--border)] text-xs font-black uppercase transition-all cursor-pointer shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] ${
                 filter === t
-                  ? "bg-indigo-600 text-white"
-                  : "bg-zinc-900 text-gray-500 hover:text-white border border-gray-800"
+                  ? "bg-[var(--color-primary)] text-white"
+                  : "bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
               }`}
             >
               {t === "all" ? `All (${rows.length})` : `${t} (${rows.filter((r) => r.interactionType === t).length})`}
@@ -386,34 +375,34 @@ function InteractionsTable({ rows }) {
               "interactions.csv"
             )
           }
-          className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-xl border border-gray-800 text-gray-400 hover:text-white hover:border-gray-600 transition-all"
+          className="flex items-center gap-1.5 text-xs font-black uppercase px-3.5 py-2 border-2 border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--color-accent)] hover:translate-y-[-1px] active:translate-y-[1px] transition-all cursor-pointer shadow-[2px_2px_0px_0px_var(--shadow-color)] whitespace-nowrap"
         >
           <Download className="w-3.5 h-3.5" />
           Export CSV
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800">
-        <table className="w-full text-sm">
-          <thead className="bg-zinc-900/80">
+      <div className="overflow-x-auto border-2 border-[var(--border)] shadow-[3px_3px_0px_0px_var(--shadow-color)] bg-[var(--bg-card)]">
+        <table className="w-full text-xs">
+          <thead className="bg-[var(--bg-elevated)] border-b-2 border-[var(--border)]">
             <tr>
               <SortTh label="Type" field="interactionType" sort={sort} onSort={onSort} />
               <SortTh label="Date" field="createdAt" sort={sort} onSort={onSort} />
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-widest py-3 px-4">User ID</th>
+              <th className="text-left text-xs font-black text-[var(--text-secondary)] uppercase tracking-wider py-3 px-4">User ID</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-900">
+          <tbody className="divide-y divide-[var(--border)]">
             {filtered.length === 0 ? (
               <EmptyTable message="No interactions yet." />
             ) : (
               filtered.map((r) => (
-                <tr key={r._id} className="hover:bg-white/[0.02] transition-colors">
+                <tr key={r._id} className="hover:bg-[var(--bg-elevated)]/30 transition-colors">
                   <td className="py-3 px-4">
                     <InteractionBadge type={r.interactionType} />
                   </td>
-                  <td className="py-3 px-4 text-gray-500 text-xs whitespace-nowrap">{fmtDate(r.createdAt)}</td>
+                  <td className="py-3 px-4 font-bold text-[var(--text-secondary)] whitespace-nowrap">{fmtDate(r.createdAt)}</td>
                   <td className="py-3 px-4">
-                    <code className="text-[10px] bg-gray-900 border border-gray-800 text-gray-500 px-2 py-0.5 rounded-md font-mono">
+                    <code className="text-[10px] bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-primary)] px-2 py-0.5 font-mono font-bold">
                       {r.userId}
                     </code>
                   </td>
@@ -423,7 +412,7 @@ function InteractionsTable({ rows }) {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-gray-600 text-right">{filtered.length} of {rows.length} records shown (max 200)</p>
+      <p className="text-xs font-bold text-[var(--text-secondary)] text-right">{filtered.length} of {rows.length} records shown (max 200)</p>
     </div>
   );
 }
@@ -445,7 +434,7 @@ function LikesTable({ rows }) {
   }, [rows, sort]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex justify-end">
         <button
           onClick={() =>
@@ -455,42 +444,42 @@ function LikesTable({ rows }) {
               "likes.csv"
             )
           }
-          className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-xl border border-gray-800 text-gray-400 hover:text-white hover:border-gray-600 transition-all"
+          className="flex items-center gap-1.5 text-xs font-black uppercase px-3.5 py-2 border-2 border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--color-accent)] hover:translate-y-[-1px] active:translate-y-[1px] transition-all cursor-pointer shadow-[2px_2px_0px_0px_var(--shadow-color)]"
         >
           <Download className="w-3.5 h-3.5" />
           Export CSV
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-800">
-        <table className="w-full text-sm">
-          <thead className="bg-zinc-900/80">
+      <div className="overflow-x-auto border-2 border-[var(--border)] shadow-[3px_3px_0px_0px_var(--shadow-color)] bg-[var(--bg-card)]">
+        <table className="w-full text-xs">
+          <thead className="bg-[var(--bg-elevated)] border-b-2 border-[var(--border)]">
             <tr>
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-widest py-3 px-4">#</th>
+              <th className="text-left text-xs font-black text-[var(--text-secondary)] uppercase tracking-wider py-3 px-4">#</th>
               <SortTh label="User ID" field="userId" sort={sort} onSort={onSort} />
               <SortTh label="Liked At" field="likedAt" sort={sort} onSort={onSort} />
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-900">
+          <tbody className="divide-y divide-[var(--border)]">
             {sorted.length === 0 ? (
               <EmptyTable message="No likes yet." />
             ) : (
               sorted.map((r, i) => (
-                <tr key={r._id} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3 px-4 text-gray-700 text-xs">{i + 1}</td>
+                <tr key={r._id} className="hover:bg-[var(--bg-elevated)]/30 transition-colors">
+                  <td className="py-3 px-4 font-bold text-[var(--text-muted)] text-xs">{i + 1}</td>
                   <td className="py-3 px-4">
-                    <code className="text-[10px] bg-gray-900 border border-gray-800 text-gray-400 px-2 py-0.5 rounded-md font-mono">
+                    <code className="text-[10px] bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-primary)] px-2 py-0.5 font-mono font-bold">
                       {r.userId}
                     </code>
                   </td>
-                  <td className="py-3 px-4 text-gray-500 text-xs whitespace-nowrap">{fmtDate(r.likedAt)}</td>
+                  <td className="py-3 px-4 font-bold text-[var(--text-secondary)] whitespace-nowrap">{fmtDate(r.likedAt)}</td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-gray-600 text-right">{sorted.length} records</p>
+      <p className="text-xs font-bold text-[var(--text-secondary)] text-right">{sorted.length} records</p>
     </div>
   );
 }
@@ -517,6 +506,7 @@ export default function AnalyticsPage() {
     api.analytics.getRawEventData,
     selectedEventId && mainTab === "data" ? { eventId: selectedEventId } : "skip"
   );
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
@@ -536,62 +526,63 @@ export default function AnalyticsPage() {
     (analytics.registrationCount > 0 || analytics.viewCount > 0 || analytics.likeCount > 0);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-7">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       {/* ── Header ── */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b-2 border-[var(--border)]">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-3">
-            <BarChart3 className="w-9 h-9 text-indigo-400" />
+          <h1 className="text-4xl font-black font-[var(--font-display)] uppercase text-[var(--text-primary)] flex items-center gap-3">
+            <BarChart3 className="w-9 h-9 text-[var(--color-primary)]" />
             Organizer Analytics
           </h1>
-          <p className="text-muted-foreground mt-2 text-sm max-w-lg">
+          <p className="text-[var(--text-secondary)] mt-2 text-sm font-semibold max-w-lg">
             Track registrations, engagement funnels, recommendation CTR, and inspect raw event data.
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
           {myEvents && myEvents.length > 0 ? (
-            <Select value={selectedEventId} onValueChange={setSelectedEventId}>
-              <SelectTrigger className="w-full sm:w-72 bg-zinc-950 border-gray-800 text-white rounded-xl h-11">
-                <SelectValue placeholder="Select an event" />
-              </SelectTrigger>
-              <SelectContent className="bg-zinc-950 border-gray-800 text-white">
-                {myEvents.map((evt) => (
-                  <SelectItem key={evt._id} value={evt._id} className="hover:bg-indigo-950/30 cursor-pointer">
-                    {evt.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="w-full sm:w-72">
+              <label className="block text-[10px] font-black uppercase text-[var(--text-secondary)] mb-1">Select Active Event</label>
+              <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+                <SelectTrigger className="w-full bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:ring-0 focus:ring-offset-0 font-bold uppercase text-xs">
+                  <SelectValue placeholder="Select an event" />
+                </SelectTrigger>
+                <SelectContent className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[4px_4px_0px_0px_var(--shadow-color)] z-50">
+                  {myEvents.map((evt) => (
+                    <SelectItem key={evt._id} value={evt._id} className="hover:bg-[var(--bg-elevated)] cursor-pointer focus:bg-[var(--bg-elevated)] focus:text-[var(--text-primary)] font-bold text-xs uppercase rounded-none">
+                      {evt.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           ) : myEvents === undefined ? (
-            <Loader2 className="w-6 h-6 animate-spin text-indigo-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-[var(--color-primary)]" />
           ) : (
-            <span className="text-muted-foreground text-sm">No events created yet</span>
+            <span className="text-[var(--text-secondary)] font-bold uppercase text-sm">No events created yet</span>
           )}
-
-
         </div>
       </div>
 
       {/* ── Portfolio Overview ── */}
       {overallStats && overallStats.totalEvents > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatCard label="My Events" value={overallStats.totalEvents} icon={Calendar} iconColor="text-blue-400" sub="Total events created" />
-          <StatCard label="Total Signups" value={overallStats.totalRegistrations} icon={Users} iconColor="text-indigo-400" barColor="bg-indigo-500" barPercent={overallStats.avgFillRate} sub={`${overallStats.avgFillRate}% avg fill rate`} />
-          <StatCard label="Total Views" value={overallStats.totalViews} icon={Eye} iconColor="text-sky-400" sub="Across all events" />
-          <StatCard label="Total Likes" value={overallStats.totalLikes} icon={Heart} iconColor="text-pink-400" sub="Event saves & likes" />
+          <StatCard label="My Events" value={overallStats.totalEvents} icon={Calendar} iconColor="text-[var(--color-primary)]" sub="Total events created" />
+          <StatCard label="Total Signups" value={overallStats.totalRegistrations} icon={Users} iconColor="text-[var(--color-secondary)]" barColor="bg-[var(--color-secondary)]" barPercent={overallStats.avgFillRate} sub={`${overallStats.avgFillRate}% avg fill rate`} />
+          <StatCard label="Total Views" value={overallStats.totalViews} icon={Eye} iconColor="text-[var(--color-accent)]" sub="Across all events" />
+          <StatCard label="Total Likes" value={overallStats.totalLikes} icon={Heart} iconColor="text-[var(--color-danger)]" sub="Event saves & likes" />
         </div>
       )}
 
       {/* ── No Events ── */}
       {myEvents && myEvents.length === 0 && (
-        <div className="border border-dashed border-gray-800 bg-gray-950/20 rounded-2xl p-14 text-center">
-          <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto text-blue-400 mb-4">
+        <div className="border-2 border-dashed border-[var(--border)] bg-[var(--bg-card)] rounded-none p-14 text-center shadow-[4px_4px_0px_0px_var(--shadow-color)]">
+          <div className="w-16 h-16 bg-[var(--bg-elevated)] border-2 border-[var(--border)] shadow-[2px_2px_0px_0px_var(--shadow-color)] flex items-center justify-center mx-auto text-[var(--color-primary)] mb-4">
             <Calendar className="w-8 h-8" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">No events found</h3>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Create an event first to start tracking metrics and attendee behaviour.
+          <h3 className="text-lg font-black uppercase text-[var(--text-primary)] mb-2">No events found</h3>
+          <p className="text-sm font-semibold text-[var(--text-secondary)] max-w-md mx-auto">
+            Create an event first to start tracking metrics and attendee behavior.
           </p>
         </div>
       )}
@@ -599,27 +590,27 @@ export default function AnalyticsPage() {
       {/* ── Loading ── */}
       {selectedEventId && !analytics && myEvents && myEvents.length > 0 && (
         <div className="min-h-[40vh] flex flex-col items-center justify-center gap-4 text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
-          <p className="text-muted-foreground text-sm">Loading analytics…</p>
+          <Loader2 className="w-10 h-10 animate-spin text-[var(--color-primary)]" />
+          <p className="text-[var(--text-secondary)] font-bold uppercase text-xs">Loading analytics…</p>
         </div>
       )}
 
       {/* ── Main Content ── */}
       {analytics && (
-        <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="space-y-6 animate-fade-in">
 
           {/* Event Banner */}
-          <div className="p-5 rounded-2xl border border-gray-800/80 bg-gradient-to-r from-zinc-950/80 via-indigo-950/10 to-zinc-950/80 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="p-5 border-2 border-[var(--border)] bg-[var(--bg-card)] shadow-[4px_4px_0px_0px_var(--shadow-color)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <span className="text-xs text-indigo-400 font-bold uppercase tracking-widest">Currently Analyzing</span>
-              <h2 className="text-2xl font-bold text-white mt-0.5">{analytics.event?.title}</h2>
-              <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 mt-1.5">
+              <span className="text-[10px] text-[var(--color-primary)] font-black uppercase tracking-widest bg-[var(--bg-elevated)] border border-[var(--border)] px-2 py-0.5 shadow-[1px_1px_0px_0px_var(--shadow-color)]">Currently Analyzing</span>
+              <h2 className="text-2xl font-black text-[var(--text-primary)] font-[var(--font-display)] uppercase mt-2">{analytics.event?.title}</h2>
+              <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-[var(--text-secondary)] mt-2">
                 <div className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
+                  <MapPin className="w-3.5 h-3.5" />
                   <span>{analytics.event?.city}{analytics.event?.country ? `, ${analytics.event.country}` : ""}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
+                  <Clock className="w-3.5 h-3.5" />
                   <span>
                     {analytics.event?.startDate
                       ? new Date(analytics.event.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
@@ -627,19 +618,19 @@ export default function AnalyticsPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Activity className="w-3 h-3 text-emerald-400" />
-                  <span className="text-emerald-400 font-semibold">{analytics.capacityFill}% filled</span>
+                  <Activity className="w-3.5 h-3.5 text-[var(--color-success)]" />
+                  <span className="text-[var(--color-success)]">{analytics.capacityFill}% filled</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-gray-500 border border-gray-800 bg-black/30 px-4 py-2 rounded-xl">
-              <Star className="w-3.5 h-3.5 text-yellow-500" />
+            <div className="flex items-center gap-2 text-xs font-black uppercase text-[var(--text-secondary)] border-2 border-[var(--border)] bg-[var(--bg-card)] px-4 py-2 shadow-[2px_2px_0px_0px_var(--shadow-color)]">
+              <Star className="w-3.5 h-3.5 text-[var(--color-accent)] fill-[var(--color-accent)]" />
               Capacity:
-              <strong className="text-gray-300 ml-1">
+              <strong className="text-[var(--text-primary)] ml-1">
                 {showRawRegs ? analytics.totalRegistrationCount : analytics.registrationCount} / {analytics.event?.capacity}
               </strong>
               {showRawRegs && analytics.cancelledCount > 0 && (
-                <span className="text-red-400/60">(incl. {analytics.cancelledCount} cancelled)</span>
+                <span className="text-[var(--color-danger)] font-black italic ml-1">(incl. {analytics.cancelledCount} cancelled)</span>
               )}
             </div>
           </div>
@@ -665,11 +656,11 @@ export default function AnalyticsPage() {
           {mainTab === "dashboard" && (
             <div className="space-y-6">
               {!hasData && (
-                <div className="border border-dashed border-zinc-800 bg-zinc-950/40 rounded-2xl p-6 flex items-start gap-4">
-                  <BarChart3 className="w-5 h-5 text-indigo-400 mt-0.5 flex-shrink-0" />
+                <div className="border-2 border-dashed border-[var(--border)] bg-[var(--bg-card)] p-6 flex items-start gap-4 shadow-[3px_3px_0px_0px_var(--shadow-color)]">
+                  <BarChart3 className="w-5 h-5 text-[var(--color-primary)] mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-zinc-300 mb-1">No analytics data yet</p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-sm font-black uppercase text-[var(--text-primary)] mb-1">No analytics data yet</p>
+                    <p className="text-xs font-semibold text-[var(--text-secondary)]">
                       There are no registrations, page views, or likes recorded for this event yet.
                     </p>
                   </div>
@@ -679,17 +670,17 @@ export default function AnalyticsPage() {
               {/* KPI Row 1 */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Registrations card with confirmed / raw toggle */}
-                <div className="border border-gray-800 bg-zinc-950/60 backdrop-blur-xl p-5 rounded-2xl flex flex-col gap-2 hover:border-gray-700 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 font-semibold uppercase tracking-widest">Registrations</span>
-                    <Users className="w-4 h-4 text-indigo-400" />
+                <div className="cyber-card p-5 flex flex-col gap-2 bg-[var(--bg-card)] border-2 border-[var(--border)] shadow-[4px_4px_0px_0px_var(--shadow-color)]">
+                  <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] font-bold uppercase tracking-wider">
+                    <span>Registrations</span>
+                    <Users className="w-4 h-4 text-[var(--color-primary)]" />
                   </div>
-                  <p className="text-3xl font-extrabold text-white tabular-nums">
+                  <p className="text-3xl font-black text-[var(--text-primary)] tabular-nums font-[var(--font-display)]">
                     {showRawRegs ? analytics.totalRegistrationCount : analytics.registrationCount}
                   </p>
-                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-2 bg-[var(--bg-elevated)] border-2 border-[var(--border)] overflow-hidden">
                     <div
-                      className="h-full bg-indigo-500 rounded-full transition-all duration-700"
+                      className="h-full bg-[var(--color-primary)] transition-all duration-700"
                       style={{ width: `${Math.min(100, showRawRegs ? Math.round((analytics.totalRegistrationCount / (analytics.event?.capacity || 1)) * 100) : analytics.capacityFill)}%` }}
                     />
                   </div>
@@ -697,16 +688,16 @@ export default function AnalyticsPage() {
                   <div className="flex items-center gap-1.5 mt-1">
                     <button
                       onClick={() => setShowRawRegs(false)}
-                      className={`flex-1 text-[10px] font-bold px-2 py-1 rounded-md transition-all ${
-                        !showRawRegs ? "bg-indigo-600 text-white" : "bg-white/5 text-gray-500 hover:text-white"
+                      className={`flex-1 text-[9px] font-black uppercase py-1 border border-[var(--border)] transition-all cursor-pointer ${
+                        !showRawRegs ? "bg-[var(--color-primary)] text-white shadow-[1px_1px_0px_0px_var(--shadow-color)]" : "bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       }`}
                     >
                       Confirmed
                     </button>
                     <button
                       onClick={() => setShowRawRegs(true)}
-                      className={`flex-1 text-[10px] font-bold px-2 py-1 rounded-md transition-all ${
-                        showRawRegs ? "bg-indigo-600 text-white" : "bg-white/5 text-gray-500 hover:text-white"
+                      className={`flex-1 text-[9px] font-black uppercase py-1 border border-[var(--border)] transition-all cursor-pointer ${
+                        showRawRegs ? "bg-[var(--color-primary)] text-white shadow-[1px_1px_0px_0px_var(--shadow-color)]" : "bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       }`}
                       title="Total documents in the registrations table — matches the Convex dashboard count"
                     >
@@ -714,65 +705,65 @@ export default function AnalyticsPage() {
                     </button>
                   </div>
                   {showRawRegs && analytics.cancelledCount > 0 && (
-                    <span className="text-[10px] text-red-400/70">{analytics.cancelledCount} cancelled included</span>
+                    <span className="text-[10px] font-black text-[var(--color-danger)] uppercase mt-1">{analytics.cancelledCount} cancelled included</span>
                   )}
                 </div>
-                <StatCard label="Check-Ins" value={analytics.attendanceCount} icon={Award} iconColor="text-emerald-400" barColor="bg-emerald-500" barPercent={analytics.attendanceRate} sub={`${analytics.attendanceRate}% attendance rate`} />
-                <StatCard label="Page Views" value={analytics.viewCount} icon={Eye} iconColor="text-sky-400" sub="Total event detail views" />
-                <StatCard label="Rec. CTR" value={ctr ? `${ctr.ctr.toFixed(1)}%` : "0%"} icon={Percent} iconColor="text-pink-400" sub={`${ctr?.views ?? 0} impressions · ${ctr?.clicks ?? 0} clicks`} />
+                <StatCard label="Check-Ins" value={analytics.attendanceCount} icon={Award} iconColor="text-[var(--color-success)]" barColor="bg-[var(--color-success)]" barPercent={analytics.attendanceRate} sub={`${analytics.attendanceRate}% attendance rate`} />
+                <StatCard label="Page Views" value={analytics.viewCount} icon={Eye} iconColor="text-[var(--color-secondary)]" sub="Total event detail views" />
+                <StatCard label="Rec. CTR" value={ctr ? `${ctr.ctr.toFixed(1)}%` : "0%"} icon={Percent} iconColor="text-[var(--color-accent)]" sub={`${ctr?.views ?? 0} impressions · ${ctr?.clicks ?? 0} clicks`} />
               </div>
 
               {/* KPI Row 2 */}
               <div className="grid grid-cols-3 gap-4">
-                <StatCard label="Likes" value={analytics.likeCount} icon={Heart} iconColor="text-rose-400" sub="Total hearts" />
-                <StatCard label="Bookmarks" value={analytics.bookmarkCount} icon={Bookmark} iconColor="text-amber-400" sub="Saved for later" />
-                <StatCard label="Shares" value={analytics.shareCount} icon={Share2} iconColor="text-teal-400" sub="Social shares" />
+                <StatCard label="Likes" value={analytics.likeCount} icon={Heart} iconColor="text-[var(--color-danger)]" sub="Total hearts" />
+                <StatCard label="Bookmarks" value={analytics.bookmarkCount} icon={Bookmark} iconColor="text-[var(--color-accent)]" sub="Saved for later" />
+                <StatCard label="Shares" value={analytics.shareCount} icon={Share2} iconColor="text-[var(--color-primary)]" sub="Social shares" />
               </div>
 
               {/* Charts */}
               <div className="grid lg:grid-cols-2 gap-6">
                 {/* Registration Velocity */}
-                <div className="border border-gray-800/80 bg-zinc-950/50 p-6 rounded-2xl space-y-4">
+                <div className="border-2 border-[var(--border)] bg-[var(--bg-card)] shadow-[4px_4px_0px_0px_var(--shadow-color)] p-6 space-y-4">
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-indigo-400" />
-                    <h3 className="text-sm font-bold text-white">7-Day Registration Velocity</h3>
+                    <TrendingUp className="w-4 h-4 text-[var(--color-primary)]" />
+                    <h3 className="text-sm font-black uppercase text-[var(--text-primary)]">7-Day Registration Velocity</h3>
                   </div>
                   <div className="h-[220px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={analytics.registrationTimeline} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                         <defs>
                           <linearGradient id="colorRegs" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                            <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" vertical={false} />
-                        <XAxis dataKey="day" stroke="#444" fontSize={11} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#444" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--dot-color)" vertical={false} />
+                        <XAxis dataKey="day" stroke="var(--text-secondary)" fontSize={11} tickLine={false} axisLine={false} />
+                        <YAxis stroke="var(--text-secondary)" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Area type="monotone" dataKey="registrations" stroke="#6366f1" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRegs)" dot={{ fill: "#6366f1", r: 3 }} activeDot={{ r: 5, fill: "#818cf8" }} />
+                        <Area type="monotone" dataKey="registrations" stroke="var(--color-primary)" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRegs)" dot={{ fill: "var(--color-primary)", r: 3 }} activeDot={{ r: 5, fill: "var(--color-primary)" }} />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
 
                 {/* Interaction Breakdown */}
-                <div className="border border-gray-800/80 bg-zinc-950/50 p-6 rounded-2xl space-y-4">
+                <div className="border-2 border-[var(--border)] bg-[var(--bg-card)] shadow-[4px_4px_0px_0px_var(--shadow-color)] p-6 space-y-4">
                   <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-amber-400" />
-                    <h3 className="text-sm font-bold text-white">7-Day Interaction Breakdown</h3>
+                    <Zap className="w-4 h-4 text-[var(--color-accent)]" />
+                    <h3 className="text-sm font-black uppercase text-[var(--text-primary)]">7-Day Interaction Breakdown</h3>
                   </div>
                   <div className="h-[220px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={analytics.interactionTimeline} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" vertical={false} />
-                        <XAxis dataKey="day" stroke="#444" fontSize={11} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#444" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--dot-color)" vertical={false} />
+                        <XAxis dataKey="day" stroke="var(--text-secondary)" fontSize={11} tickLine={false} axisLine={false} />
+                        <YAxis stroke="var(--text-secondary)" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} iconType="circle" iconSize={8} />
-                        <Bar dataKey="views" name="Views" fill="#38bdf8" radius={[3, 3, 0, 0]} />
-                        <Bar dataKey="clicks" name="Clicks" fill="#818cf8" radius={[3, 3, 0, 0]} />
-                        <Bar dataKey="bookmarks" name="Bookmarks" fill="#fbbf24" radius={[3, 3, 0, 0]} />
+                        <Bar dataKey="views" name="Views" fill="#06b6d4" radius={[3, 3, 0, 0]} />
+                        <Bar dataKey="clicks" name="Clicks" fill="var(--color-primary)" radius={[3, 3, 0, 0]} />
+                        <Bar dataKey="bookmarks" name="Bookmarks" fill="var(--color-accent)" radius={[3, 3, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -780,40 +771,42 @@ export default function AnalyticsPage() {
               </div>
 
               {/* Funnel */}
-              <div className="border border-gray-800/80 bg-zinc-950/50 p-6 rounded-2xl space-y-5">
+              <div className="border-2 border-[var(--border)] bg-[var(--bg-card)] shadow-[4px_4px_0px_0px_var(--shadow-color)] p-6 space-y-5">
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-emerald-400" />
-                  <h3 className="text-sm font-bold text-white">Attendance Conversion Funnel</h3>
+                  <Users className="w-4 h-4 text-[var(--color-success)]" />
+                  <h3 className="text-sm font-black uppercase text-[var(--text-primary)]">Attendance Conversion Funnel</h3>
                 </div>
                 <div className="grid sm:grid-cols-3 gap-4">
-                  <div className="bg-indigo-950/20 border border-indigo-800/30 rounded-xl p-4 text-center">
-                    <p className="text-xs text-indigo-400 uppercase tracking-widest font-semibold mb-2">1. Page Views</p>
-                    <p className="text-3xl font-extrabold text-white">{analytics.viewCount}</p>
-                    <p className="text-xs text-gray-600 mt-1">Top of funnel</p>
-                    <div className="h-1.5 bg-white/5 rounded-full mt-3"><div className="h-full bg-indigo-500 rounded-full w-full" /></div>
+                  <div className="bg-[var(--bg-elevated)] border-2 border-[var(--border)] p-4 text-center shadow-[2px_2px_0px_0px_var(--shadow-color)]">
+                    <p className="text-xs text-[var(--color-primary)] uppercase tracking-wider font-black mb-2">1. Page Views</p>
+                    <p className="text-3xl font-black text-[var(--text-primary)] font-[var(--font-display)]">{analytics.viewCount}</p>
+                    <p className="text-xs text-[var(--text-secondary)] font-bold mt-1">TOP OF FUNNEL</p>
+                    <div className="h-2 bg-[var(--bg-card)] border border-[var(--border)] mt-3">
+                      <div className="h-full bg-[var(--color-primary)] w-full" />
+                    </div>
                   </div>
-                  <div className="bg-purple-950/20 border border-purple-800/30 rounded-xl p-4 text-center">
-                    <p className="text-xs text-purple-400 uppercase tracking-widest font-semibold mb-2">2. Registered</p>
-                    <p className="text-3xl font-extrabold text-white">{analytics.registrationCount}</p>
-                    <p className="text-xs text-gray-600 mt-1">
+                  <div className="bg-[var(--bg-elevated)] border-2 border-[var(--border)] p-4 text-center shadow-[2px_2px_0px_0px_var(--shadow-color)]">
+                    <p className="text-xs text-[var(--color-secondary)] uppercase tracking-wider font-black mb-2">2. Registered</p>
+                    <p className="text-3xl font-black text-[var(--text-primary)] font-[var(--font-display)]">{analytics.registrationCount}</p>
+                    <p className="text-xs text-[var(--text-secondary)] font-bold mt-1">
                       {analytics.viewCount > 0
                         ? `${Math.round((analytics.registrationCount / analytics.viewCount) * 100)}% conversion`
                         : "—"}
                     </p>
-                    <div className="h-1.5 bg-white/5 rounded-full mt-3 overflow-hidden">
-                      <div className="h-full bg-purple-500 rounded-full" style={{ width: analytics.viewCount > 0 ? `${Math.min(100, (analytics.registrationCount / analytics.viewCount) * 100)}%` : "0%" }} />
+                    <div className="h-2 bg-[var(--bg-card)] border border-[var(--border)] mt-3 overflow-hidden">
+                      <div className="h-full bg-[var(--color-secondary)]" style={{ width: analytics.viewCount > 0 ? `${Math.min(100, (analytics.registrationCount / analytics.viewCount) * 100)}%` : "0%" }} />
                     </div>
                   </div>
-                  <div className="bg-emerald-950/20 border border-emerald-800/30 rounded-xl p-4 text-center">
-                    <p className="text-xs text-emerald-400 uppercase tracking-widest font-semibold mb-2">3. Checked In</p>
-                    <p className="text-3xl font-extrabold text-white">{analytics.attendanceCount}</p>
-                    <p className="text-xs text-gray-600 mt-1">{analytics.attendanceRate}% of registrants</p>
-                    <div className="h-1.5 bg-white/5 rounded-full mt-3 overflow-hidden">
-                      <div className="h-full bg-emerald-500 rounded-full transition-all duration-700" style={{ width: `${analytics.attendanceRate}%` }} />
+                  <div className="bg-[var(--bg-elevated)] border-2 border-[var(--border)] p-4 text-center shadow-[2px_2px_0px_0px_var(--shadow-color)]">
+                    <p className="text-xs text-[var(--color-success)] uppercase tracking-wider font-black mb-2">3. Checked In</p>
+                    <p className="text-3xl font-black text-[var(--text-primary)] font-[var(--font-display)]">{analytics.attendanceCount}</p>
+                    <p className="text-xs text-[var(--text-secondary)] font-bold mt-1">{analytics.attendanceRate}% OF REGISTRANTS</p>
+                    <div className="h-2 bg-[var(--bg-card)] border border-[var(--border)] mt-3 overflow-hidden">
+                      <div className="h-full bg-[var(--color-success)] transition-all duration-700" style={{ width: `${analytics.attendanceRate}%` }} />
                     </div>
                   </div>
                 </div>
-                <p className="text-[11px] text-gray-600 text-center">Check-ins are recorded in real time when QR codes are scanned at the venue entrance.</p>
+                <p className="text-[11px] text-[var(--text-secondary)] font-bold text-center">Check-ins are recorded in real time when QR codes are scanned at the venue entrance.</p>
               </div>
             </div>
           )}
@@ -847,12 +840,12 @@ export default function AnalyticsPage() {
               </div>
 
               {!rawData ? (
-                <div className="flex items-center justify-center py-16 gap-3 text-muted-foreground text-sm">
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                <div className="flex items-center justify-center py-16 gap-3 text-[var(--text-secondary)] text-sm font-bold uppercase">
+                  <Loader2 className="w-5 h-5 animate-spin text-[var(--color-primary)]" />
                   Loading data…
                 </div>
               ) : (
-                <div className="animate-in fade-in duration-200">
+                <div className="animate-fade-in">
                   {dataTab === "registrations" && (
                     <RegistrationsTable rows={rawData.registrations} />
                   )}

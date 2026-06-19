@@ -1,156 +1,543 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700&display=swap");
 @import "tailwindcss";
-@import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-}
-
-:root {
-  --radius: 0.625rem;
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
-.light {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
+/* ── Override Tailwind v4 base to inject our CSS custom properties ─────── */
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  :root {
+    /* Warm Vintage Cream & Slate Neutral Anchors */
+    --bg-primary: #FAF3E0;           /* Rich vintage cream paper feel */
+    --bg-secondary: #FAF3E0;
+    --bg-card: #FFFDF9;              /* Warm eggshell card base */
+    --bg-elevated: #F3E9D2;          /* Rich vintage panel fill */
+
+    --text-primary: #1E293B;         /* Slate 800 (Highly legible text) */
+    --text-secondary: #5C6F84;       /* Slate 500 */
+    --text-muted: #94A3B8;
+
+    /* Playful Saturation (Memphis Candy Palette) */
+    --color-primary: #8B5CF6;        /* Vivid Violet (Primary Actions) */
+    --color-primary-hover: #7C3AED;
+    --color-secondary: #F472B6;      /* Hot Pink (Playful pop) */
+    --color-accent: #FBBF24;         /* Amber Yellow (Optimism highlight) */
+    --color-success: #34D399;        /* Mint Green (Freshness) */
+    --color-warning: #FBBF24;
+    --color-danger: #F87171;         /* Friendly red-coral */
+
+    --border: #1E293B;               /* Chunky Slate 800 borders (2px) */
+    --border-hover: #1E293B;
+    --shadow-color: #1E293B;         /* Dark Pop Shadow */
+    --dot-color: rgba(30, 41, 59, 0.12);
+
+    /* Typography Font Stacks */
+    --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+    --font-display: "Outfit", system-ui, sans-serif;
+
+    /* Playful Radii */
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+    --radius-xl: 0px;
+    --radius-full: 0px;
   }
+
+  .dark {
+    /* Sleek, Premium Cyber Neon Dark Mode */
+    --bg-primary: #090D1A;           /* Deep cyber space dark blue */
+    --bg-secondary: #090D1A;
+    --bg-card: #121829;              /* High-fidelity dark navy cards */
+    --bg-elevated: #1C233D;          /* Translucent elevated panels */
+
+    --text-primary: #F8FAFC;         /* Crisp slate white */
+    --text-secondary: #94A3B8;       /* Tech slate 400 */
+    --text-muted: #475569;           /* Deep slate 600 */
+
+    --color-primary: #8B5CF6;        /* Radiant neon violet */
+    --color-primary-hover: #A78BFA;  /* Bright soft violet */
+    
+    --border: #232C47;               /* Subtle premium dark outline */
+    --border-hover: #8B5CF6;         /* Glow border on hover */
+    --shadow-color: #020617;         /* Deep pure dark shadow */
+    --dot-color: rgba(139, 92, 246, 0.05); /* Soft glowing violet grid dots */
+  }
+
+  /* Critical: Override Tailwind v4 preflight backgrounds */
+  html {
+    background-color: #FAF3E0 !important;
+  }
+
+  html.dark {
+    background-color: #090D1A !important;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+}
+
+/* Translucent Glassmorphism Card Overrides in Dark Mode */
+.dark .glass-card, .dark .cyber-card {
+  background: rgba(18, 24, 41, 0.75) !important;
+  border: 2px solid var(--border) !important;
+  backdrop-filter: blur(16px) !important;
+  box-shadow: 4px 4px 0px 0px var(--shadow-color) !important;
+}
+
+.dark .glass-card:hover, .dark .cyber-card:hover {
+  border-color: var(--color-primary) !important;
+  box-shadow: 6px 6px 0px 0px var(--color-secondary) !important; /* Glowing Pink pop shadow */
+}
+
+.dark .pop-shadow-card {
+  border: 2px solid var(--border) !important;
+  box-shadow: 4px 4px 0px 0px var(--shadow-color) !important;
+  background: var(--bg-card) !important;
+}
+
+.dark .pop-shadow-card:hover {
+  border-color: var(--color-primary) !important;
+  box-shadow: 6px 6px 0px 0px var(--color-primary) !important;
+}
+
+/* ── Playful Toy Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-left: 2px solid var(--border);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-secondary);
+}
+
+/* ── Tactile Polka-Dot Grid Background ──────────────────────────────────── */
+.dot-grid {
+  background-color: var(--bg-primary) !important;
+  background-image: radial-gradient(var(--dot-color) 1.5px, transparent 1.5px) !important;
+  background-size: 24px 24px !important;
+}
+
+/* ── 3D Hard "Pop" Shadows (No Blur, Solid Slate Offsets) ────────────────── */
+.pop-shadow {
+  box-shadow: 4px 4px 0px 0px var(--shadow-color);
+  border: 2px solid var(--border);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pop-shadow:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px var(--shadow-color);
+}
+
+.pop-shadow:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px var(--shadow-color);
+}
+
+/* Large card shadows */
+.pop-shadow-card {
+  box-shadow: 6px 6px 0px 0px var(--shadow-color);
+  border: 2px solid var(--border);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pop-shadow-card:hover {
+  transform: scale(1.015) rotate(-0.5deg);
+  box-shadow: 8px 8px 0px 0px var(--color-secondary); /* Pink shadow on hover */
+}
+
+/* ── Special Geometric Blob Shapes (Radii Splitting) ───────────────────── */
+.speech-bubble {
+  border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 0px;
+}
+
+.blob-leaf {
+  border-radius: var(--radius-xl) 0px var(--radius-xl) var(--radius-xl);
+}
+
+.arch-top {
+  border-radius: var(--radius-xl) var(--radius-xl) 0px 0px;
+}
+
+/* ── Reusable Candy Card Primitive ───────────────────────────────────────── */
+.glass-card, .cyber-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 0px;
+  box-shadow: 5px 5px 0px 0px var(--shadow-color);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+.glass-card:hover, .cyber-card:hover {
+  transform: scale(1.02) rotate(-0.8deg);
+  box-shadow: 7px 7px 0px 0px var(--color-secondary); /* Interactive pink outline shadow */
+}
+
+/* Featured card variant */
+.cyber-card-featured {
+  border-color: var(--border);
+  box-shadow: 6px 6px 0px 0px var(--color-accent);
+}
+.cyber-card-featured:hover {
+  box-shadow: 8px 8px 0px 0px var(--color-primary);
+}
+
+/* ── High-Contrast Typography ────────────────────────────────────────────── */
+.gradient-text, .gradient-text-accent {
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  -webkit-text-fill-color: unset;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-weight: 800;
+  border-bottom: 3px dashed var(--color-accent);
+  padding-bottom: 2px;
+}
+
+.gradient-text-accent {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-secondary);
+}
+
+/* Friendly glitch header alternative */
+.cyber-glitch {
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* ── Chunky Candy Buttons ───────────────────────────────────────────────── */
+.btn-primary, .cyber-btn {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  background: var(--color-primary);
+  color: var(--bg-primary);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.65rem 1.75rem;
+  border: 2px solid var(--border);
+  border-radius: 0px;
+  cursor: pointer;
+  box-shadow: 4px 4px 0px 0px var(--shadow-color);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary:hover, .cyber-btn:hover {
+  background: var(--color-primary-hover);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px var(--shadow-color);
+}
+
+.btn-primary:active, .cyber-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px var(--shadow-color);
+}
+
+/* Secondary (Amber Yellow) Button */
+.btn-secondary, .cyber-btn-secondary {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  background: var(--color-accent);
+  color: var(--text-primary);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.65rem 1.75rem;
+  border: 2px solid var(--border);
+  border-radius: 0px;
+  cursor: pointer;
+  box-shadow: 4px 4px 0px 0px var(--shadow-color);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary:hover, .cyber-btn-secondary:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px var(--shadow-color);
+}
+
+/* Outline / Ghost Button (Fills with Amber on hover) */
+.btn-ghost, .cyber-btn-outline {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.65rem 1.5rem;
+  border: 2px solid var(--border);
+  border-radius: 0px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px 0px var(--shadow-color);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-ghost:hover, .cyber-btn-outline:hover {
+  background: var(--color-accent);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px 0px var(--shadow-color);
+}
+
+.btn-ghost:active, .cyber-btn-outline:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px 0px var(--shadow-color);
+}
+
+/* ── Playful Form Inputs ────────────────────────────────────────────────── */
+.input-field, .cyber-input {
+  background: var(--bg-card);
+  border: 2px solid #CBD5E1;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.75rem 1.25rem;
+  width: 100%;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 3px 3px 0px 0px transparent;
+}
+
+.input-field:focus, .cyber-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 3px 3px 0px 0px var(--color-primary);
+}
+
+.input-field::placeholder, .cyber-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── Candy Badge capsules ───────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 2px solid var(--border);
+  color: var(--text-primary);
+  box-shadow: 2px 2px 0px 0px var(--shadow-color);
+}
+
+.badge-primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.badge-success {
+  background: var(--color-success);
+}
+
+.badge-warning {
+  background: var(--color-accent);
+}
+
+.badge-danger {
+  background: var(--color-danger);
+  color: white;
+}
+
+.badge-cyan {
+  background: var(--color-secondary);
+}
+
+/* ── Elastic Transitions & Animations ───────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.96) translateY(4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(3deg); }
+  75% { transform: rotate(-3deg); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in { animation: fadeIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.animate-slide-left { animation: slideInLeft 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.animate-wiggle:hover { animation: wiggle 0.4s ease infinite; }
+.animate-marquee { animation: marquee 20s linear infinite; }
+
+/* ── Dot Grid Wireframe Loaders ─────────────────────────────────────────── */
+.skeleton {
+  background: var(--bg-elevated);
+  border: 2px dashed var(--border);
+  animation: shimmer 2s infinite linear;
+  background-size: 200% 100%;
+  border-radius: var(--radius-md);
+}
+
+/* ── Geometric Grid Layouts ─────────────────────────────────────────────── */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.section-header {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 1.75rem;
+}
+
+/* ── Dynamic Sidebar ────────────────────────────────────────────────────── */
+.sidebar-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border-right: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.main-content {
+  flex: 1;
+  overflow-x: hidden;
+}
+
+/* ── Interactive Recharts Vectors ───────────────────────────────────────── */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--border);
+  stroke-width: 1.5px;
+}
+
+.recharts-text {
+  fill: var(--text-primary);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 10px;
+}
+
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: var(--bg-card) !important;
+  border: 2px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 4px 4px 0px 0px var(--shadow-color) !important;
+  font-family: var(--font-sans) !important;
+}
+
+/* ── Playful Chip inputs ────────────────────────────────────────────────── */
+.tag-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.65rem;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  min-height: 2.75rem;
+  align-items: center;
+  box-shadow: 3px 3px 0px 0px var(--shadow-color);
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--color-accent);
+  border: 2px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.25rem 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  box-shadow: 1.5px 1.5px 0px 0px var(--shadow-color);
+}
+
+.tag-chip button {
+  color: var(--text-primary);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-weight: 800;
+}
+
+.tag-chip button:hover {
+  color: var(--color-danger);
+}
+
+/* ── Tactile Toy Alerts ─────────────────────────────────────────────────── */
+.notification-dot {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-secondary);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-full);
+}
+
+/* ── QR sticker Box ──────────────────────────────────────────────────────── */
+.qr-container {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: inline-flex;
+  box-shadow: 6px 6px 0px 0px var(--shadow-color);
+}
+
+/* ── Tactile Score Bars ─────────────────────────────────────────────────── */
+.score-bar {
+  height: 10px;
+  background: var(--bg-elevated);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

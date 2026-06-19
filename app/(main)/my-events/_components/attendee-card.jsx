@@ -1,12 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { useConvexMutation } from "@/hooks/use-convex-query";
 import { format } from "date-fns";
 import { CheckCircle, Circle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-// Attendee Card Component
 export function AttendeeCard({ registration }) {
   const { mutate: checkInAttendee, isLoading } = useConvexMutation(
     api.registrations.checkInAttendee,
@@ -26,55 +23,51 @@ export function AttendeeCard({ registration }) {
   };
 
   return (
-    <Card className="py-0">
-      <CardContent className="p-4 flex items-start gap-4">
-        <div
-          className={`mt-1 p-2 rounded-full ${
-            registration.checkedIn ? "bg-green-100" : "bg-gray-100"
-          }`}
-        >
-          {registration.checkedIn ? (
-            <CheckCircle className="w-5 h-5 text-green-600" />
-          ) : (
-            <Circle className="w-5 h-5 text-gray-400" />
-          )}
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold mb-1">{registration.attendeeName}</h3>
-          <p className="text-sm text-muted-foreground mb-2">
-            {registration.attendeeEmail}
-          </p>
-          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-            <span>
-              {registration.checkedIn ? "⏰ Checked in" : "📅 Registered"}{" "}
-              {registration.checkedIn && registration.checkedInAt
-                ? format(registration.checkedInAt, "PPp")
-                : format(registration.registeredAt, "PPp")}
-            </span>
-            <span className="font-mono">QR: {registration.qrCode}</span>
-          </div>
-        </div>
-
-        {!registration.checkedIn && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleManualCheckIn}
-            disabled={isLoading}
-            className="gap-2"
-          >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <>
-                <CheckCircle className="w-4 h-4" />
-                Check In
-              </>
-            )}
-          </Button>
+    <div className="border-2 border-[var(--border)] bg-[var(--bg-card)] shadow-[3px_3px_0px_0px_var(--shadow-color)] p-4 flex items-start gap-4 transition-all">
+      <div
+        className={`mt-0.5 p-2 border-2 border-[var(--border)] shadow-[1px_1px_0px_0px_var(--shadow-color)] ${
+          registration.checkedIn ? "bg-[var(--color-success)]" : "bg-[var(--bg-elevated)]"
+        }`}
+      >
+        {registration.checkedIn ? (
+          <CheckCircle className="w-5 h-5 text-[var(--text-primary)]" />
+        ) : (
+          <Circle className="w-5 h-5 text-[var(--text-secondary)]" />
         )}
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <h3 className="font-extrabold text-sm uppercase text-[var(--text-primary)] mb-0.5">{registration.attendeeName}</h3>
+        <p className="text-xs font-semibold text-[var(--text-secondary)] mb-2">
+          {registration.attendeeEmail}
+        </p>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] font-bold text-[var(--text-secondary)] uppercase">
+          <span className="flex items-center gap-1 bg-[var(--bg-elevated)] px-1.5 py-0.5 border border-[var(--border)] shadow-[1px_1px_0px_0px_var(--shadow-color)]">
+            {registration.checkedIn ? "⏰ Checked in" : "📅 Registered"}{" "}
+            {registration.checkedIn && registration.checkedInAt
+              ? format(registration.checkedInAt, "PPp")
+              : format(registration.registeredAt, "PPp")}
+          </span>
+          <span className="font-mono bg-[var(--bg-elevated)] px-1.5 py-0.5 border border-[var(--border)] shadow-[1px_1px_0px_0px_var(--shadow-color)]">QR: {registration.qrCode}</span>
+        </div>
+      </div>
+
+      {!registration.checkedIn && (
+        <button
+          onClick={handleManualCheckIn}
+          disabled={isLoading}
+          className="font-bold text-xs uppercase px-3 py-1.5 border-2 border-[var(--border)] bg-[var(--color-success)] hover:bg-[var(--color-success)] text-[var(--text-primary)] transition-all shadow-[1.5px_1.5px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] cursor-pointer inline-flex items-center gap-1.5 self-center disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <>
+              <CheckCircle className="w-4 h-4" />
+              Check In
+            </>
+          )}
+        </button>
+      )}
+    </div>
   );
 }

@@ -114,6 +114,7 @@ export default function QRScannerModal({ isOpen, onClose }) {
       }
       setScannerReady(false);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, mode]);
 
   // Focus manual input when switching to manual mode
@@ -142,25 +143,25 @@ export default function QRScannerModal({ isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md bg-zinc-950 border border-gray-800 text-white">
+      <DialogContent className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[6px_6px_0px_0px_var(--shadow-color)] max-w-md p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-white">
-            <QrCode className="w-5 h-5 text-purple-400" />
+          <DialogTitle className="flex items-center gap-2 font-black uppercase text-lg text-[var(--text-primary)]">
+            <QrCode className="w-5 h-5 text-[var(--color-primary)]" />
             Check-In Attendee
           </DialogTitle>
-          <DialogDescription className="text-gray-500">
+          <DialogDescription className="text-xs font-bold text-[var(--text-secondary)] mt-1 uppercase">
             Scan a QR code with your camera or enter the ticket code manually.
           </DialogDescription>
         </DialogHeader>
 
         {/* Mode Toggle */}
-        <div className="flex gap-2">
+        <div className="flex gap-2.5 mt-3">
           <button
             onClick={() => { setMode("camera"); setLastResult(null); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 border-2 border-[var(--border)] text-xs font-black uppercase transition-all shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] cursor-pointer ${
               mode === "camera"
-                ? "bg-purple-600 text-white"
-                : "bg-zinc-900 text-gray-400 hover:text-white border border-gray-800"
+                ? "bg-[var(--color-primary)] text-white"
+                : "bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
             }`}
           >
             <Camera className="w-4 h-4" />
@@ -168,10 +169,10 @@ export default function QRScannerModal({ isOpen, onClose }) {
           </button>
           <button
             onClick={() => { setMode("manual"); setLastResult(null); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 border-2 border-[var(--border)] text-xs font-black uppercase transition-all shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] cursor-pointer ${
               mode === "manual"
-                ? "bg-purple-600 text-white"
-                : "bg-zinc-900 text-gray-400 hover:text-white border border-gray-800"
+                ? "bg-[var(--color-primary)] text-white"
+                : "bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
             }`}
           >
             <KeyboardIcon className="w-4 h-4" />
@@ -182,26 +183,26 @@ export default function QRScannerModal({ isOpen, onClose }) {
         {/* Last result banner */}
         {lastResult && (
           <div
-            className={`flex items-center gap-3 p-3 rounded-xl border text-sm ${
+            className={`flex items-center gap-3 p-3 border-2 border-[var(--border)] shadow-[3px_3px_0px_0px_var(--shadow-color)] text-xs font-bold uppercase mt-2 ${
               lastResult.success
-                ? "bg-emerald-950/40 border-emerald-700/50 text-emerald-300"
-                : "bg-red-950/40 border-red-700/50 text-red-300"
+                ? "bg-[var(--color-success)] text-[var(--text-primary)]"
+                : "bg-[var(--color-danger)] text-white"
             }`}
           >
             {lastResult.success ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              <CheckCircle2 className="w-5 h-5 text-[var(--text-primary)] flex-shrink-0" />
             ) : (
-              <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+              <XCircle className="w-5 h-5 text-white flex-shrink-0" />
             )}
-            <div>
+            <div className="flex-1">
               {lastResult.success && (
-                <p className="font-bold">{lastResult.name}</p>
+                <p className="font-black text-sm">{lastResult.name}</p>
               )}
-              <p>{lastResult.message}</p>
+              <p className="mt-0.5">{lastResult.message}</p>
             </div>
             <button
               onClick={() => setLastResult(null)}
-              className="ml-auto text-gray-500 hover:text-white"
+              className="text-current hover:opacity-80 cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -210,26 +211,26 @@ export default function QRScannerModal({ isOpen, onClose }) {
 
         {/* ── Camera Mode ── */}
         {mode === "camera" && (
-          <div className="space-y-3">
+          <div className="space-y-3 mt-4">
             {cameraError ? (
-              <div className="text-sm text-red-400 bg-red-950/30 border border-red-800/40 rounded-xl p-4 text-center">
+              <div className="text-xs font-bold uppercase text-[var(--color-danger)] bg-[var(--bg-elevated)] border-2 border-[var(--color-danger)] shadow-[2px_2px_0px_0px_var(--shadow-color)] p-4 text-center">
                 {cameraError}
               </div>
             ) : (
               <>
                 <div
                   id="qr-reader"
-                  className="w-full rounded-xl overflow-hidden"
-                  style={{ minHeight: "300px" }}
+                  className="w-full border-2 border-[var(--border)] shadow-[3px_3px_0px_0px_var(--shadow-color)] bg-black overflow-hidden"
+                  style={{ minHeight: "260px" }}
                 />
                 {!scannerReady && (
-                  <div className="flex items-center justify-center py-4 gap-2 text-gray-400 text-sm">
-                    <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
+                  <div className="flex items-center justify-center py-4 gap-2 text-[var(--text-secondary)] text-xs font-bold uppercase">
+                    <Loader2 className="w-5 h-5 animate-spin text-[var(--color-primary)]" />
                     Starting camera…
                   </div>
                 )}
                 {scannerReady && (
-                  <p className="text-xs text-gray-500 text-center">
+                  <p className="text-[10px] text-[var(--text-secondary)] font-bold uppercase text-center mt-2">
                     Position the attendee&apos;s QR code within the frame
                   </p>
                 )}
@@ -240,9 +241,9 @@ export default function QRScannerModal({ isOpen, onClose }) {
  
         {/* ── Manual Entry Mode ── */}
         {mode === "manual" && (
-          <form onSubmit={handleManualSubmit} className="space-y-3">
+          <form onSubmit={handleManualSubmit} className="space-y-3 mt-4">
             <div>
-              <label className="text-xs text-gray-400 font-semibold uppercase tracking-widest mb-1.5 block">
+              <label className="text-[10px] text-[var(--text-secondary)] font-black uppercase tracking-wider mb-1 block">
                 Ticket / QR Code
               </label>
               <input
@@ -250,17 +251,17 @@ export default function QRScannerModal({ isOpen, onClose }) {
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
                 placeholder="e.g. EVT-1234567890-ABC123"
-                className="w-full bg-zinc-900 border border-gray-700 text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-colors placeholder:text-gray-600 font-mono"
+                className="w-full bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] text-xs font-bold px-4 py-3 outline-none focus:border-[var(--color-primary)] focus:shadow-[2px_2px_0px_0px_var(--shadow-color)] transition-all placeholder:text-[var(--text-muted)] font-mono"
                 autoComplete="off"
               />
-              <p className="text-[11px] text-gray-600 mt-1.5">
+              <p className="text-[10px] text-[var(--text-secondary)] font-bold uppercase mt-2">
                 The QR code value is printed on the attendee&apos;s ticket email.
               </p>
             </div>
             <button
               type="submit"
               disabled={!manualCode.trim() || isChecking}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-sm hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 py-3 border-2 border-[var(--border)] bg-[var(--color-primary)] text-white font-black text-xs uppercase hover:bg-[var(--color-primary-hover)] transition-all shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isChecking ? (
                 <>

@@ -8,16 +8,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { State, City } from "country-state-city";
-import { CalendarIcon, Loader2, Sparkles } from "lucide-react";
+import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon } from "lucide-react";
 import { useConvexMutation, useConvexQuery } from "@/hooks/use-convex-query";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/nextjs";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Popover,
@@ -59,7 +55,7 @@ const eventSchema = z.object({
   ticketType: z.enum(["free", "paid"]).default("free"),
   ticketPrice: z.number().optional(),
   coverImage: z.string().optional(),
-  themeColor: z.string().default("#1e3a8a"),
+  themeColor: z.string().default("#8B5CF6"),
 });
 
 export default function CreateEventPage() {
@@ -90,7 +86,7 @@ export default function CreateEventPage() {
       locationType: "physical",
       ticketType: "free",
       capacity: 50,
-      themeColor: "#1e3a8a",
+      themeColor: "#8B5CF6",
       category: "",
       state: "",
       city: "",
@@ -114,15 +110,14 @@ export default function CreateEventPage() {
     return City.getCitiesOfState("IN", st.isoCode);
   }, [selectedState, indianStates]);
 
-  // Color presets - show all for Pro, only default for Free
+  // Color presets
   const colorPresets = [
-    "#1e3a8a", // Default color (always available)
-    ...(hasPro ? ["#4c1d95", "#065f46", "#92400e", "#7f1d1d", "#831843"] : []),
+    "#8B5CF6", // Violet (Always available / New default)
+    ...(hasPro ? ["#F472B6", "#FBBF24", "#34D399", "#38BDF8", "#F87171"] : []),
   ];
 
   const handleColorClick = (color) => {
-    // If not default color and user doesn't have Pro
-    if (color !== "#1e3a8a" && !hasPro) {
+    if (color !== "#8B5CF6" && !hasPro) {
       setUpgradeReason("color");
       setShowUpgradeModal(true);
       return;
@@ -160,7 +155,7 @@ export default function CreateEventPage() {
       }
 
       // Check if trying to use custom color without Pro
-      if (data.themeColor !== "#1e3a8a" && !hasPro) {
+      if (data.themeColor !== "#8B5CF6" && !hasPro) {
         setUpgradeReason("color");
         setShowUpgradeModal(true);
         return;
@@ -185,7 +180,6 @@ export default function CreateEventPage() {
         ticketPrice: data.ticketPrice || undefined,
         coverImage: data.coverImage || undefined,
         themeColor: data.themeColor,
-        
       });
 
       toast.success("Event created successfully! 🎉");
@@ -205,73 +199,78 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div
-      className="min-h-screen transition-colors duration-300 px-6 py-8 -mt-6 md:-mt-16 lg:-mt-5 lg:rounded-md"
-      style={{ backgroundColor: themeColor }}
-    >
+    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
       {/* Header */}
-      <div className="max-w-6xl mx-auto flex flex-col gap-5 md:flex-row justify-between mb-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b-2 border-[var(--border)]">
         <div>
-          <h1 className="text-4xl font-bold">Create Event</h1>
+          <h1 className="text-4xl font-black font-[var(--font-display)] uppercase text-[var(--text-primary)]">Create Event</h1>
           {!hasPro && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Free: {currentUser?.freeEventsCreated || 0}/1 events created
+            <p className="text-xs font-bold text-[var(--text-secondary)] mt-2 uppercase">
+              Free Plan: {currentUser?.freeEventsCreated || 0}/1 events created
             </p>
           )}
         </div>
         <AIEventCreator onEventGenerated={handleAIGenerate} />
       </div>
 
-      <div className="max-w-6xl mx-auto grid md:grid-cols-[320px_1fr] gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
         {/* LEFT: Image + Theme */}
         <div className="space-y-6">
           <div
-            className="aspect-square w-full rounded-xl overflow-hidden flex items-center justify-center cursor-pointer border"
+            className="aspect-video lg:aspect-square w-full border-2 border-dashed border-[var(--border)] bg-[var(--bg-card)] flex flex-col items-center justify-center cursor-pointer shadow-[3px_3px_0px_0px_var(--shadow-color)] hover:shadow-[5px_5px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] transition-all overflow-hidden relative group"
             onClick={() => setShowImagePicker(true)}
           >
             {coverImage ? (
-              <Image
-                src={coverImage}
-                alt="Cover"
-                className="w-full h-full object-cover"
-                width={500} // Adjust width as needed
-                height={500} // Adjust height as needed
-                priority // Optional: prioritize loading this image
-              />
+              <>
+                <Image
+                  src={coverImage}
+                  alt="Cover"
+                  className="w-full h-full object-cover"
+                  width={500}
+                  height={500}
+                  priority
+                />
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-xs font-black uppercase text-white bg-[var(--border)] border border-white px-3 py-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]">Change Image</span>
+                </div>
+              </>
             ) : (
-              <span className="opacity-60 text-sm">
-                Click to add cover image
-              </span>
+              <div className="flex flex-col items-center gap-2 p-4 text-center">
+                <ImageIcon className="w-8 h-8 text-[var(--text-secondary)]" />
+                <span className="text-xs font-black uppercase text-[var(--text-secondary)]">
+                  Add cover image
+                </span>
+              </div>
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className="border-2 border-[var(--border)] bg-[var(--bg-card)] shadow-[3px_3px_0px_0px_var(--shadow-color)] p-4 space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="text-sm">Theme Color</Label>
+              <label className="text-xs font-black uppercase text-[var(--text-secondary)] tracking-wider">Theme Color</label>
               {!hasPro && (
-                <Badge variant="secondary" className="text-xs gap-1">
-                  <Sparkles className="w-3 h-3" />
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[9px] font-black uppercase border border-[var(--border)] bg-[var(--color-primary)] text-white shadow-[1px_1px_0px_0px_var(--shadow-color)]">
+                  <Sparkles className="w-2.5 h-2.5" />
                   Pro
-                </Badge>
+                </span>
               )}
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2.5 flex-wrap">
               {colorPresets.map((color) => (
                 <button
                   key={color}
                   type="button"
-                  className={`w-10 h-10 rounded-full border-2 transition-all ${
-                    !hasPro && color !== "#1e3a8a"
-                      ? "opacity-40 cursor-not-allowed"
-                      : "hover:scale-110"
+                  className={`w-9 h-9 border-2 border-[var(--border)] transition-all shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] cursor-pointer ${
+                    !hasPro && color !== "#8B5CF6"
+                      ? "opacity-30 cursor-not-allowed"
+                      : ""
                   }`}
                   style={{
                     backgroundColor: color,
-                    borderColor: themeColor === color ? "white" : "transparent",
+                    outline: themeColor === color ? "3px solid var(--color-accent)" : "none",
                   }}
                   onClick={() => handleColorClick(color)}
                   title={
-                    !hasPro && color !== "#1e3a8a"
+                    !hasPro && color !== "#8B5CF6"
                       ? "Upgrade to Pro for custom colors"
                       : ""
                   }
@@ -284,15 +283,15 @@ export default function CreateEventPage() {
                     setUpgradeReason("color");
                     setShowUpgradeModal(true);
                   }}
-                  className="w-10 h-10 rounded-full border-2 border-dashed border-purple-300 flex items-center justify-center hover:border-purple-500 transition-colors"
+                  className="w-9 h-9 border-2 border-dashed border-[var(--border)] bg-[var(--bg-elevated)] flex items-center justify-center hover:bg-[var(--color-accent)] transition-all shadow-[2px_2px_0px_0px_var(--shadow-color)] cursor-pointer"
                   title="Unlock more colors with Pro"
                 >
-                  <Sparkles className="w-5 h-5 text-purple-400" />
+                  <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
                 </button>
               )}
             </div>
             {!hasPro && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] font-semibold text-[var(--text-secondary)] uppercase">
                 Upgrade to Pro to unlock custom theme colors
               </p>
             )}
@@ -300,89 +299,95 @@ export default function CreateEventPage() {
         </div>
 
         {/* RIGHT: Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="border-2 border-[var(--border)] bg-[var(--bg-card)] shadow-[4px_4px_0px_0px_var(--shadow-color)] p-6 md:p-8 space-y-6">
           {/* Title */}
           <div>
-            <Input
+            <input
               {...register("title")}
               placeholder="Event Name"
-              className="text-3xl font-semibold bg-transparent border-none focus-visible:ring-0"
+              className="text-2xl md:text-3xl font-black bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-14 px-4 shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:shadow-[4px_4px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none placeholder:text-[var(--text-muted)] font-[var(--font-display)] uppercase w-full"
             />
             {errors.title && (
-              <p className="text-sm text-red-400 mt-1">
+              <p className="text-xs font-bold text-[var(--color-danger)] mt-2 uppercase">
                 {errors.title.message}
               </p>
             )}
           </div>
 
           {/* Date + Time */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Start */}
-            <div className="space-y-2">
-              <Label className="text-sm">Start</Label>
-              <div className="grid grid-cols-[1fr_auto] gap-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-between"
-                    >
-                      {startDate ? format(startDate, "PPP") : "Pick date"}
-                      <CalendarIcon className="w-4 h-4 opacity-60" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={(date) => setValue("startDate", date)}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <Input
+            <div className="space-y-1">
+              <label className="text-xs font-black uppercase text-[var(--text-secondary)] tracking-wider">Start Date & Time</label>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="w-full flex items-center justify-between bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:bg-[var(--bg-elevated)] transition-all font-bold uppercase text-xs cursor-pointer"
+                      >
+                        <span>{startDate ? format(startDate, "PPP") : "Pick Date"}</span>
+                        <CalendarIcon className="w-4 h-4 text-[var(--text-secondary)]" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[4px_4px_0px_0px_var(--shadow-color)] p-0 z-50">
+                      <Calendar
+                        mode="single"
+                        selected={startDate}
+                        onSelect={(date) => setValue("startDate", date)}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <input
                   type="time"
                   {...register("startTime")}
                   placeholder="hh:mm"
+                  className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-28 cursor-pointer"
                 />
               </div>
               {(errors.startDate || errors.startTime) && (
-                <p className="text-sm text-red-400">
+                <p className="text-xs font-bold text-[var(--color-danger)] mt-1 uppercase">
                   {errors.startDate?.message || errors.startTime?.message}
                 </p>
               )}
             </div>
 
             {/* End */}
-            <div className="space-y-2">
-              <Label className="text-sm">End</Label>
-              <div className="grid grid-cols-[1fr_auto] gap-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-between"
-                    >
-                      {endDate ? format(endDate, "PPP") : "Pick date"}
-                      <CalendarIcon className="w-4 h-4 opacity-60" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={(date) => setValue("endDate", date)}
-                      disabled={(date) => date < (startDate || new Date())}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <Input
+            <div className="space-y-1">
+              <label className="text-xs font-black uppercase text-[var(--text-secondary)] tracking-wider">End Date & Time</label>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="w-full flex items-center justify-between bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:bg-[var(--bg-elevated)] transition-all font-bold uppercase text-xs cursor-pointer"
+                      >
+                        <span>{endDate ? format(endDate, "PPP") : "Pick Date"}</span>
+                        <CalendarIcon className="w-4 h-4 text-[var(--text-secondary)]" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[4px_4px_0px_0px_var(--shadow-color)] p-0 z-50">
+                      <Calendar
+                        mode="single"
+                        selected={endDate}
+                        onSelect={(date) => setValue("endDate", date)}
+                        disabled={(date) => date < (startDate || new Date())}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <input
                   type="time"
                   {...register("endTime")}
                   placeholder="hh:mm"
+                  className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-28 cursor-pointer"
                 />
               </div>
               {(errors.endDate || errors.endTime) && (
-                <p className="text-sm text-red-400">
+                <p className="text-xs font-bold text-[var(--color-danger)] mt-1 uppercase">
                   {errors.endDate?.message || errors.endTime?.message}
                 </p>
               )}
@@ -390,19 +395,19 @@ export default function CreateEventPage() {
           </div>
 
           {/* Category */}
-          <div className="space-y-2">
-            <Label className="text-sm">Category</Label>
+          <div className="space-y-1">
+            <label className="text-xs font-black uppercase text-[var(--text-secondary)] tracking-wider">Category</label>
             <Controller
               control={control}
               name="category"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select category" />
+                  <SelectTrigger className="w-full bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:ring-0 focus:ring-offset-0 font-bold uppercase text-xs">
+                    <SelectValue placeholder="Select Category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[4px_4px_0px_0px_var(--shadow-color)] z-50">
                     {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
+                      <SelectItem key={cat.id} value={cat.id} className="hover:bg-[var(--bg-elevated)] cursor-pointer focus:bg-[var(--bg-elevated)] focus:text-[var(--text-primary)] font-bold text-xs uppercase rounded-none">
                         {cat.icon} {cat.label}
                       </SelectItem>
                     ))}
@@ -411,14 +416,14 @@ export default function CreateEventPage() {
               )}
             />
             {errors.category && (
-              <p className="text-sm text-red-400">{errors.category.message}</p>
+              <p className="text-xs font-bold text-[var(--color-danger)] mt-1 uppercase">{errors.category.message}</p>
             )}
           </div>
 
           {/* Location */}
           <div className="space-y-3">
-            <Label className="text-sm">Location</Label>
-            <div className="grid grid-cols-2 gap-4">
+            <label className="text-xs font-black uppercase text-[var(--text-secondary)] tracking-wider">Location & Region</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Controller
                 control={control}
                 name="state"
@@ -430,12 +435,12 @@ export default function CreateEventPage() {
                       setValue("city", "");
                     }}
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select state" />
+                    <SelectTrigger className="w-full bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:ring-0 focus:ring-offset-0 font-bold uppercase text-xs">
+                      <SelectValue placeholder="Select State" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[4px_4px_0px_0px_var(--shadow-color)] z-50">
                       {indianStates.map((s) => (
-                        <SelectItem key={s.isoCode} value={s.name}>
+                        <SelectItem key={s.isoCode} value={s.name} className="hover:bg-[var(--bg-elevated)] cursor-pointer focus:bg-[var(--bg-elevated)] focus:text-[var(--text-primary)] font-bold text-xs uppercase rounded-none">
                           {s.name}
                         </SelectItem>
                       ))}
@@ -453,16 +458,16 @@ export default function CreateEventPage() {
                     onValueChange={field.onChange}
                     disabled={!selectedState}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:ring-0 focus:ring-offset-0 font-bold uppercase text-xs disabled:opacity-50 disabled:cursor-not-allowed">
                       <SelectValue
                         placeholder={
-                          selectedState ? "Select city" : "Select state first"
+                          selectedState ? "Select City" : "Select State First"
                         }
                       />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[4px_4px_0px_0px_var(--shadow-color)] z-50">
                       {cities.map((c) => (
-                        <SelectItem key={c.name} value={c.name}>
+                        <SelectItem key={c.name} value={c.name} className="hover:bg-[var(--bg-elevated)] cursor-pointer focus:bg-[var(--bg-elevated)] focus:text-[var(--text-primary)] font-bold text-xs uppercase rounded-none">
                           {c.name}
                         </SelectItem>
                       ))}
@@ -472,35 +477,38 @@ export default function CreateEventPage() {
               />
             </div>
 
-            <div className="space-y-2 mt-6">
-              <Label className="text-sm">Venue Details</Label>
+            <div className="space-y-3 mt-4">
+              <label className="text-xs font-black uppercase text-[var(--text-secondary)] tracking-wider">Venue Details</label>
 
-              <Input
+              <input
                 {...register("venue")}
-                placeholder="Venue link (Google Maps Link)"
+                placeholder="Google Maps URL"
                 type="url"
+                className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-full"
               />
               {errors.venue && (
-                <p className="text-sm text-red-400">{errors.venue.message}</p>
+                <p className="text-xs font-bold text-[var(--color-danger)] mt-1 uppercase">{errors.venue.message}</p>
               )}
 
-              <Input
+              <input
                 {...register("address")}
-                placeholder="Full address / street / building (optional)"
+                placeholder="Full address / building details (optional)"
+                className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-full"
               />
             </div>
           </div>
 
           {/* Description */}
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea
+          <div className="space-y-1">
+            <label className="text-xs font-black uppercase text-[var(--text-secondary)] tracking-wider">Description</label>
+            <textarea
               {...register("description")}
               placeholder="Tell people about your event..."
-              rows={4}
+              rows={5}
+              className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:shadow-[4px_4px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none placeholder:text-[var(--text-muted)] p-3 text-sm font-semibold w-full resize-none"
             />
             {errors.description && (
-              <p className="text-sm text-red-400">
+              <p className="text-xs font-bold text-[var(--color-danger)] mt-1 uppercase">
                 {errors.description.message}
               </p>
             )}
@@ -508,59 +516,69 @@ export default function CreateEventPage() {
 
           {/* Ticketing */}
           <div className="space-y-3">
-            <Label className="text-sm">Tickets</Label>
+            <label className="text-xs font-black uppercase text-[var(--text-secondary)] tracking-wider">Ticketing Options</label>
             <div className="flex items-center gap-6">
-              <label className="flex items-center gap-2">
+              <label className="flex items-center gap-2 font-black uppercase text-xs text-[var(--text-primary)] cursor-pointer">
                 <input
                   type="radio"
                   value="free"
                   {...register("ticketType")}
                   defaultChecked
+                  className="w-4.5 h-4.5 accent-[var(--color-primary)] cursor-pointer"
                 />{" "}
-                Free
+                Free Admission
               </label>
-              <label className="flex items-center gap-2">
-                <input type="radio" value="paid" {...register("ticketType")} />{" "}
-                Paid
+              <label className="flex items-center gap-2 font-black uppercase text-xs text-[var(--text-primary)] cursor-pointer">
+                <input 
+                  type="radio" 
+                  value="paid" 
+                  {...register("ticketType")} 
+                  className="w-4.5 h-4.5 accent-[var(--color-primary)] cursor-pointer"
+                />{" "}
+                Paid Ticket
               </label>
             </div>
 
             {ticketType === "paid" && (
-              <Input
-                type="number"
-                placeholder="Ticket price ₹"
-                {...register("ticketPrice", { valueAsNumber: true })}
-              />
+              <div className="max-w-xs animate-fade-in">
+                <input
+                  type="number"
+                  placeholder="Ticket Price (₹)"
+                  {...register("ticketPrice", { valueAsNumber: true })}
+                  className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-full"
+                />
+              </div>
             )}
           </div>
 
           {/* Capacity */}
-          <div className="space-y-2">
-            <Label className="text-sm">Capacity</Label>
-            <Input
+          <div className="space-y-1">
+            <label className="text-xs font-black uppercase text-[var(--text-secondary)] tracking-wider">Venue Capacity</label>
+            <input
               type="number"
               {...register("capacity", { valueAsNumber: true })}
               placeholder="Ex: 100"
+              className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-full"
             />
             {errors.capacity && (
-              <p className="text-sm text-red-400">{errors.capacity.message}</p>
+              <p className="text-xs font-bold text-[var(--color-danger)] mt-1 uppercase">{errors.capacity.message}</p>
             )}
           </div>
 
           {/* Submit */}
-          <Button
+          <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-6 text-lg rounded-xl"
+            className="w-full py-4 text-sm font-black uppercase border-2 border-[var(--border)] bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-all cursor-pointer shadow-[3px_3px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...
+                <Loader2 className="w-4 h-4 animate-spin" /> Creating Event...
               </>
             ) : (
               "Create Event"
             )}
-          </Button>
+          </button>
         </form>
       </div>
 
