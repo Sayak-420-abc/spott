@@ -1,8 +1,9 @@
 "use client";
-
+ 
 import { useConvexQuery } from "@/hooks/use-convex-query";
 import { api } from "@/convex/_generated/api";
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import { useAction } from "convex/react";
 import {
   Carousel,
   CarouselContent,
@@ -15,26 +16,47 @@ import Autoplay from "embla-carousel-autoplay";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Calendar, Loader2, MapPin, Users } from "lucide-react";
+import { ArrowRight, Calendar, Loader2, MapPin, Users, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { createLocationSlug } from "@/lib/location-utils";
 import EventCard from "@/components/event-card";
 import { CATEGORIES } from "@/lib/data";
-
+ 
 const ExplorePage = () => {
   //Fetch current user for location
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
   const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
   const router = useRouter();
-
+ 
+  // Recommendations state & fetching
+  const getRecs = useAction(api.recommendations.getRecommendations);
+  const [recommendations, setRecommendations] = useState([]);
+  const [loadingRecs, setLoadingRecs] = useState(false);
+ 
+  useEffect(() => {
+    const fetchRecs = async () => {
+      if (!currentUser) return;
+      setLoadingRecs(true);
+      try {
+        const res = await getRecs({ userId: currentUser._id, limit: 4 });
+        setRecommendations(res || []);
+      } catch (err) {
+        console.error("Failed to fetch recommendations:", err);
+      } finally {
+        setLoadingRecs(false);
+      }
+    };
+    fetchRecs();
+  }, [currentUser, getRecs]);
+ 
   const { data: featuredEvents, isLoading: loadingFeatured } = useConvexQuery(
     api.explore.getFeaturedEvents,
     {
       limit: 3,
     },
   );
-
+ 
   const { data: localEvents, isLoading: loadingLocal } = useConvexQuery(
     api.explore.getEventsByLocation,
     {
@@ -43,12 +65,12 @@ const ExplorePage = () => {
       limit: 4,
     },
   );
-
+ 
   const { data: popularEvents, isLoading: loadingPopular } = useConvexQuery(
     api.explore.getPopularEvents,
     { limit: 6 },
   );
-
+ 
   const { data: categoryCounts } = useConvexQuery(
     api.explore.getCategoryCounts,
   );
@@ -197,6 +219,57 @@ const ExplorePage = () => {
               />
             ))}
           </div>
+        </div>
+      )}
+
+      {/* AI Recommendations */}
+      {currentUser && (loadingRecs || (recommendations && recommendations.length > 0)) && (
+        <div className="mb-16">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-3xl font-bold mb-1 flex items-center gap-2">
+                <Sparkles className="w-7 h-7 text-purple-400 animate-pulse animate-duration-3000" />
+                Recommended for You
+              </h2>
+              <p className="text-muted-foreground">
+                AI-personalized matches based on your skills and interests
+              </p>
+            </div>
+            {!loadingRecs && recommendations.length > 0 && (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() => router.push("/recommendations")}
+              >
+                View All <ArrowRight className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+
+          {loadingRecs ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {recommendations.map((rec) => (
+                <div key={rec.event._id} className="relative group">
+                  <EventCard
+                    event={rec.event}
+                    variant="grid"
+                    onClick={() => handleEventClick(rec.event.slug)}
+                  />
+                  {/* Percentage matching badge overlay */}
+                  <div className="absolute top-3 left-3 z-10">
+                    <Badge className="bg-purple-600 hover:bg-purple-600 text-white font-bold gap-1 px-2.5 py-1 text-xs shadow-md border border-purple-500/30">
+                      <Sparkles className="w-3 h-3 text-white fill-white" />
+                      {Math.round(rec.finalScore * 100)}% Match
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

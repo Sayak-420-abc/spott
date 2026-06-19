@@ -8,12 +8,26 @@
  * @module
  */
 
+import type * as analytics from "../analytics.js";
+import type * as attendance from "../attendance.js";
 import type * as dashboard from "../dashboard.js";
 import type * as events from "../events.js";
 import type * as explore from "../explore.js";
+import type * as friendships from "../friendships.js";
+import type * as lib_embeddings_cosineSimilarity from "../lib/embeddings/cosineSimilarity.js";
+import type * as lib_embeddings_generateEventEmbedding from "../lib/embeddings/generateEventEmbedding.js";
+import type * as lib_embeddings_generateUserEmbedding from "../lib/embeddings/generateUserEmbedding.js";
+import type * as lib_recommendation_deadlineScore from "../lib/recommendation/deadlineScore.js";
+import type * as lib_recommendation_explanationGenerator from "../lib/recommendation/explanationGenerator.js";
+import type * as lib_recommendation_finalScore from "../lib/recommendation/finalScore.js";
+import type * as lib_recommendation_freshnessScore from "../lib/recommendation/freshnessScore.js";
+import type * as lib_recommendation_recommendationEngine from "../lib/recommendation/recommendationEngine.js";
+import type * as lib_recommendation_semanticScore from "../lib/recommendation/semanticScore.js";
+import type * as lib_recommendation_socialScore from "../lib/recommendation/socialScore.js";
+import type * as lib_recommendation_trendScore from "../lib/recommendation/trendScore.js";
+import type * as recommendations from "../recommendations.js";
 import type * as registrations from "../registrations.js";
 import type * as search from "../search.js";
-import type * as seed from "../seed.js";
 import type * as users from "../users.js";
 
 import type {
@@ -23,12 +37,26 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  analytics: typeof analytics;
+  attendance: typeof attendance;
   dashboard: typeof dashboard;
   events: typeof events;
   explore: typeof explore;
+  friendships: typeof friendships;
+  "lib/embeddings/cosineSimilarity": typeof lib_embeddings_cosineSimilarity;
+  "lib/embeddings/generateEventEmbedding": typeof lib_embeddings_generateEventEmbedding;
+  "lib/embeddings/generateUserEmbedding": typeof lib_embeddings_generateUserEmbedding;
+  "lib/recommendation/deadlineScore": typeof lib_recommendation_deadlineScore;
+  "lib/recommendation/explanationGenerator": typeof lib_recommendation_explanationGenerator;
+  "lib/recommendation/finalScore": typeof lib_recommendation_finalScore;
+  "lib/recommendation/freshnessScore": typeof lib_recommendation_freshnessScore;
+  "lib/recommendation/recommendationEngine": typeof lib_recommendation_recommendationEngine;
+  "lib/recommendation/semanticScore": typeof lib_recommendation_semanticScore;
+  "lib/recommendation/socialScore": typeof lib_recommendation_socialScore;
+  "lib/recommendation/trendScore": typeof lib_recommendation_trendScore;
+  recommendations: typeof recommendations;
   registrations: typeof registrations;
   search: typeof search;
-  seed: typeof seed;
   users: typeof users;
 }>;
 

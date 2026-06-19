@@ -60,7 +60,7 @@ export const getCurrentUser = query({
       .unique();
 
     if (!user) {
-      throw new Error("User not found");
+      return null;
     }
 
     return user;
@@ -91,5 +91,22 @@ export const completeOnboarding = mutation({
     });
 
     return user._id;
+  },
+});
+
+export const getUserById = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    return await ctx.db.get(userId);
+  },
+});
+
+export const updateUserEmbedding = mutation({
+  args: {
+    userId: v.id("users"),
+    embedding: v.array(v.float64()),
+  },
+  handler: async (ctx, { userId, embedding }) => {
+    await ctx.db.patch(userId, { embedding });
   },
 });

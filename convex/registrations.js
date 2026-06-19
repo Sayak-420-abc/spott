@@ -84,6 +84,7 @@ export const checkRegistration = query({
 export const getMyRegistrations = query({
   handler: async (ctx) => {
     const user = await ctx.runQuery(internal.users.getCurrentUser);
+    if (!user) return [];
 
     const registrations = await ctx.db
       .query("registrations")
@@ -208,6 +209,13 @@ export const checkInAttendee = mutation({
       checkedInAt: Date.now(),
     });
 
+    // Sync check-in to attendance table for analytics funnel
+    await ctx.db.insert("attendance", {
+      eventId: registration.eventId,
+      userId: registration.userId,
+      checkedInAt: Date.now(),
+    });
+
     return {
       success: true,
       message: "Check-in successful",
@@ -217,5 +225,42 @@ export const checkInAttendee = mutation({
         checkedInAt: Date.now(),
       },
     };
+  },
+});
+
+export const getUserRegistrations = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    return await ctx.db
+      .query("registrations")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+  },
+});
+
+export const getEventRegistrationsForRecommendations = query({
+  args: { eventId: v.id("events") },
+  handler: async (ctx, { eventId }) => {
+    const regs = await ctx.db
+      .query("registrations")
+      .withIndex("by_event", (q) => q.eq("eventId", eventId))
+      .collect();
+
+    return await Promise.all(
+      regs.map(async (r) => {
+        const user = await ctx.db.get(r.userId);
+        return {
+          ...r,
+          user: user
+            ? {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                image: user.imageUrl,
+              }
+            : null,
+        };
+      })
+    );
   },
 });

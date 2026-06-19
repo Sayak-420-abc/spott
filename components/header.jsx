@@ -9,13 +9,14 @@ import { Authenticated, AuthLoading, Unauthenticated } from 'convex/react';
 import { BarLoader } from 'react-spinners';
 import { useStoreUser } from '@/hooks/use-store-user';
 import { useState } from 'react';
-import { Building, Crown, Plus, Ticket } from 'lucide-react';
+import { Building, Crown, Plus, Ticket, Sparkles, TrendingUp } from 'lucide-react';
 import { OnboardingModal } from './onboarding-modal';
 import { useOnboarding } from '@/hooks/use-onboarding';
 //import {SearchLocationBar} from './search-location-bar';
 import dynamic from "next/dynamic";
 import { Badge } from './ui/badge';
 import UpgradeModal from './upgrade-modal';
+
 
 const SearchLocationBar = dynamic(() => import("./search-location-bar"), {
   ssr: false,
@@ -100,6 +101,12 @@ const Header = () => {
                     label="My Events"
                     labelIcon={<Building size={16} />}
                     href="/my-events"
+                  />
+
+                  <UserButton.Link
+                    label="Analytics"
+                    labelIcon={<TrendingUp size={16} />}
+                    href="/analytics"
                   />
 
                   <UserButton.Action label="manageAccount" />

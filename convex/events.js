@@ -84,6 +84,7 @@ export const getEventBySlug = query({
 export const getMyEvents = query({
   handler: async (ctx) => {
     const user = await ctx.runQuery(internal.users.getCurrentUser);
+    if (!user) return [];
 
     const events = await ctx.db
       .query("events")
@@ -132,5 +133,100 @@ export const deleteEvent = mutation({
     }
 
     return { success: true };
+  },
+});
+
+export const listActiveEvents = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("events")
+      .collect();
+  },
+});
+
+export const getEventById = query({
+  args: { eventId: v.id("events") },
+  handler: async (ctx, { eventId }) => {
+    return await ctx.db.get(eventId);
+  },
+});
+
+export const updateEvent = mutation({
+  args: {
+    eventId: v.id("events"),
+    embedding: v.optional(v.array(v.float64())),
+    viewCount: v.optional(v.number()),
+    likeCount: v.optional(v.number()),
+    registrationCount: v.optional(v.number()),
+    isArchived: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const { eventId, ...patchData } = args;
+    await ctx.db.patch(eventId, patchData);
+  },
+});
+
+export const isLiked = query({
+  args: {
+    eventId: v.id("events"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, { eventId, userId }) => {
+    const like = await ctx.db
+      .query("eventLikes")
+      .withIndex("by_event_user", (q) =>
+        q.eq("eventId", eventId).eq("userId", userId)
+      )
+      .unique();
+    return !!like;
+  },
+});
+
+export const toggleLikeEvent = mutation({
+  args: { eventId: v.id("events") },
+  handler: async (ctx, { eventId }) => {
+    const user = await ctx.runQuery(internal.users.getCurrentUser);
+    if (!user) throw new Error("Not authenticated");
+
+    const existing = await ctx.db
+      .query("eventLikes")
+      .withIndex("by_event_user", (q) =>
+        q.eq("eventId", eventId).eq("userId", user._id)
+      )
+      .unique();
+
+    const event = await ctx.db.get(eventId);
+    if (!event) throw new Error("Event not found");
+
+    const currentLikeCount = event.likeCount ?? 0;
+
+    if (existing) {
+      await ctx.db.delete(existing._id);
+      await ctx.db.patch(eventId, {
+        likeCount: Math.max(0, currentLikeCount - 1),
+      });
+      return { liked: false };
+    } else {
+      await ctx.db.insert("eventLikes", {
+        eventId,
+        userId: user._id,
+        likedAt: Date.now(),
+      });
+      await ctx.db.patch(eventId, {
+        likeCount: currentLikeCount + 1,
+      });
+      return { liked: true };
+    }
+  },
+});
+
+export const getEventLikes = query({
+  args: { eventId: v.id("events") },
+  handler: async (ctx, { eventId }) => {
+    return await ctx.db
+      .query("eventLikes")
+      .withIndex("by_event", (q) => q.eq("eventId", eventId))
+      .collect();
   },
 });

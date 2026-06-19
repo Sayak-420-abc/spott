@@ -16,9 +16,11 @@ import {
   ExternalLink,
   Loader2,
   CheckCircle,
+  Heart,
 } from "lucide-react";
-import { useConvexQuery } from "@/hooks/use-convex-query";
+import { useConvexQuery, useConvexMutation } from "@/hooks/use-convex-query";
 import { api } from "@/convex/_generated/api";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
 
@@ -45,11 +47,53 @@ export default function EventDetailPage() {
   const router = useRouter();
   const { user } = useUser();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [togglingLike, setTogglingLike] = useState(false);
 
   // Fetch event details
   const { data: event, isLoading } = useConvexQuery(api.events.getEventBySlug, {
     slug: params.slug,
   });
+
+  // Fetch current database user
+  const { data: dbUser } = useConvexQuery(api.users.getCurrentUser);
+
+  // Check if user has liked this event
+  const { data: isLikedEvent } = useConvexQuery(
+    api.events.isLiked,
+    event?._id && dbUser?._id ? { eventId: event._id, userId: dbUser._id } : "skip"
+  );
+
+  const { mutate: toggleLike } = useConvexMutation(api.events.toggleLikeEvent);
+  const { mutate: recordInteraction } = useConvexMutation(api.analytics.recordInteraction);
+
+  // Record viewed interaction
+  useEffect(() => {
+    if (event?._id && dbUser?._id) {
+      recordInteraction({
+        eventId: event._id,
+        userId: dbUser._id,
+        interactionType: "viewed",
+      });
+    }
+  }, [event?._id, dbUser?._id]);
+
+  const handleToggleLike = async () => {
+    if (!event?._id) return;
+    setTogglingLike(true);
+    try {
+      const res = await toggleLike({ eventId: event._id });
+      if (res?.liked) {
+        toast.success("Event liked!");
+      } else {
+        toast.info("Event unliked.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update like status");
+    } finally {
+      setTogglingLike(false);
+    }
+  };
 
   // Check if user is already registered
   const { data: registration } = useConvexQuery(
@@ -330,6 +374,21 @@ export default function EventDetailPage() {
                   <Button className="w-full gap-2" onClick={handleRegister}>
                     <Ticket className="w-4 h-4" />
                     Register for Event
+                  </Button>
+                )}
+
+                {/* Like Button */}
+                {user && (
+                  <Button
+                    variant={isLikedEvent ? "default" : "outline"}
+                    className={`w-full gap-2 transition-all ${
+                      isLikedEvent ? "bg-rose-600 hover:bg-rose-500 text-white" : "hover:text-rose-400"
+                    }`}
+                    disabled={togglingLike}
+                    onClick={handleToggleLike}
+                  >
+                    <Heart className={`w-4 h-4 ${isLikedEvent ? "fill-current" : ""}`} />
+                    {isLikedEvent ? "Liked" : "Like Event"} {(event.likeCount ?? 0) > 0 && `(${event.likeCount})`}
                   </Button>
                 )}
 
