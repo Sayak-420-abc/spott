@@ -36,14 +36,13 @@ export function useOnboarding() {
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
-    // Refresh to get updated user data
+    // Stay on current page, just refresh to get updated user data
     router.refresh();
   };
 
   const handleOnboardingSkip = () => {
     setShowOnboarding(false);
-    // Redirect back to homepage if they skip
-    router.push("/");
+    // Stay on current page when skipping
   };
 
   return {

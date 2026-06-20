@@ -152,6 +152,44 @@ export const getEventById = query({
   },
 });
 
+// Edit / update event content (organizer only)
+export const editEvent = mutation({
+  args: {
+    eventId: v.id("events"),
+    title: v.string(),
+    description: v.string(),
+    category: v.string(),
+    tags: v.array(v.string()),
+    startDate: v.number(),
+    endDate: v.number(),
+    timezone: v.string(),
+    locationType: v.union(v.literal("physical"), v.literal("online")),
+    venue: v.optional(v.string()),
+    address: v.optional(v.string()),
+    city: v.string(),
+    state: v.optional(v.string()),
+    country: v.string(),
+    capacity: v.number(),
+    ticketType: v.union(v.literal("free"), v.literal("paid")),
+    ticketPrice: v.optional(v.number()),
+    coverImage: v.optional(v.string()),
+    themeColor: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.runQuery(internal.users.getCurrentUser);
+    if (!user) throw new Error("Not authenticated");
+
+    const event = await ctx.db.get(args.eventId);
+    if (!event) throw new Error("Event not found");
+    if (event.organizerId !== user._id)
+      throw new Error("You are not authorized to edit this event");
+
+    const { eventId, ...fields } = args;
+    await ctx.db.patch(eventId, { ...fields, updatedAt: Date.now() });
+    return eventId;
+  },
+});
+
 export const updateEvent = mutation({
   args: {
     eventId: v.id("events"),

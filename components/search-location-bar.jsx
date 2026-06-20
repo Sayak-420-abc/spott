@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Search, MapPin, Calendar, Loader2 } from "lucide-react";
+import { Search, MapPin, Calendar, Loader2, ChevronDown } from "lucide-react";
 import { State, City } from "country-state-city";
 import { format } from "date-fns";
 import { useConvexQuery, useConvexMutation } from "@/hooks/use-convex-query";
@@ -11,8 +11,6 @@ import { api } from "@/convex/_generated/api";
 import { createLocationSlug } from "@/lib/location-utils";
 import { getCategoryIcon } from "@/lib/data";
 
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectTrigger,
@@ -112,73 +110,195 @@ export default function SearchLocationBar() {
   }, []);
 
   return (
-    <div className="flex items-center">
-      {/* Search Bar */}
-      <div className="relative flex w-full" ref={searchRef}>
-        <div className="flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search events..."
-            onChange={handleSearchInput}
-            onFocus={() => {
-              if (searchQuery.length >= 2) setShowSearchResults(true);
-            }}
-            className="pl-10 w-full h-9 rounded-none rounded-l-md"
-          />
-        </div>
+    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+      {/* ── Search Bar ── */}
+      <div style={{ position: "relative", flex: 1 }} ref={searchRef}>
+        <Search
+          size={15}
+          strokeWidth={2}
+          style={{
+            position: "absolute",
+            left: "0.75rem",
+            top: "50%",
+            transform: "translateY(-50%)",
+            color: "var(--text-muted)",
+            pointerEvents: "none",
+          }}
+        />
+        <input
+          type="text"
+          placeholder="Search events..."
+          onChange={handleSearchInput}
+          onFocus={() => {
+            if (searchQuery.length >= 2) setShowSearchResults(true);
+          }}
+          style={{
+            width: "100%",
+            height: "36px",
+            paddingLeft: "2.25rem",
+            paddingRight: "0.75rem",
+            background: "var(--bg-card)",
+            border: "2px solid var(--border)",
+            borderRight: "none",
+            borderRadius: "0px",
+            color: "var(--text-primary)",
+            fontFamily: "var(--font-sans)",
+            fontSize: "0.85rem",
+            fontWeight: 500,
+            boxShadow: "2px 2px 0px 0px var(--shadow-color)",
+            outline: "none",
+            transition: "border-color 0.2s ease",
+          }}
+          onFocusCapture={(e) => {
+            e.currentTarget.style.borderColor = "var(--color-primary)";
+          }}
+          onBlurCapture={(e) => {
+            e.currentTarget.style.borderColor = "var(--border)";
+          }}
+        />
 
-        {/* Search Results */}
+        {/* ── Search Results Dropdown ── */}
         {showSearchResults && (
-          <div className="absolute top-full mt-2 w-96 bg-background border rounded-lg shadow-lg z-50 max-h-[400px] overflow-y-auto">
+          <div
+            className="search-results-dropdown"
+            style={{
+              position: "absolute",
+              top: "calc(100% + 6px)",
+              left: 0,
+              width: "360px",
+              maxHeight: "380px",
+              overflowY: "auto",
+              background: "var(--bg-card)",
+              border: "2px solid var(--border)",
+              boxShadow: "6px 6px 0px 0px var(--shadow-color)",
+              zIndex: 9999,
+            }}
+          >
             {searchLoading ? (
-              <div className="p-4 flex items-center justify-center">
-                <Loader2 className="w-5 h-5 animate-spin text-purple-500" />
+              <div style={{ padding: "1rem", display: "flex", justifyContent: "center" }}>
+                <Loader2
+                  size={18}
+                  className="animate-spin"
+                  style={{ color: "var(--color-primary)" }}
+                />
               </div>
             ) : searchResults && searchResults.length > 0 ? (
-              <div className="py-2">
-                <p className="px-4 py-2 text-xs font-semibold text-muted-foreground">
-                  SEARCH RESULTS
+              <div>
+                <p
+                  style={{
+                    padding: "0.5rem 1rem 0.25rem",
+                    fontFamily: "var(--font-display)",
+                    fontSize: "0.62rem",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    color: "var(--text-muted)",
+                    borderBottom: "1px solid var(--border)",
+                    marginBottom: "0.25rem",
+                  }}
+                >
+                  Search Results
                 </p>
                 {searchResults.map((event) => (
                   <button
                     key={event._id}
                     onClick={() => handleEventClick(event.slug)}
-                    className="w-full px-4 py-3 hover:bg-muted/50 text-left transition-colors"
+                    className="search-result-item"
+                    style={{
+                      width: "100%",
+                      padding: "0.6rem 1rem",
+                      background: "transparent",
+                      border: "none",
+                      borderBottom: "1px solid var(--border)",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "0.75rem",
+                      transition: "background 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "var(--bg-elevated)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                    }}
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="text-2xl mt-0.5">
-                        {getCategoryIcon(event.category)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium mb-1 line-clamp-1">
-                          {event.title}
-                        </p>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {format(event.startDate, "MMM dd")}
+                    <div style={{ fontSize: "1.25rem", lineHeight: 1, marginTop: "2px", flexShrink: 0 }}>
+                      {getCategoryIcon(event.category)}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p
+                        style={{
+                          fontFamily: "var(--font-sans)",
+                          fontWeight: 600,
+                          fontSize: "0.85rem",
+                          color: "var(--text-primary)",
+                          marginBottom: "0.25rem",
+                          overflow: "hidden",
+                          whiteSpace: "nowrap",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {event.title}
+                      </p>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.75rem",
+                          fontSize: "0.72rem",
+                          color: "var(--text-muted)",
+                          fontFamily: "var(--font-sans)",
+                        }}
+                      >
+                        <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                          <Calendar size={10} strokeWidth={2} />
+                          {format(event.startDate, "MMM dd")}
+                        </span>
+                        <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                          <MapPin size={10} strokeWidth={2} />
+                          {event.city}
+                        </span>
+                        {event.ticketType === "free" && (
+                          <span
+                            style={{
+                              background: "var(--color-success)",
+                              border: "1px solid var(--border)",
+                              padding: "0.1rem 0.4rem",
+                              fontFamily: "var(--font-display)",
+                              fontWeight: 700,
+                              fontSize: "0.6rem",
+                              textTransform: "uppercase",
+                              color: "var(--text-primary)",
+                            }}
+                          >
+                            Free
                           </span>
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {event.city}
-                          </span>
-                        </div>
+                        )}
                       </div>
-                      {event.ticketType === "free" && (
-                        <Badge variant="secondary" className="text-xs">
-                          Free
-                        </Badge>
-                      )}
                     </div>
                   </button>
                 ))}
               </div>
-            ) : null}
+            ) : (
+              <p
+                style={{
+                  padding: "1rem",
+                  textAlign: "center",
+                  fontFamily: "var(--font-sans)",
+                  fontSize: "0.82rem",
+                  color: "var(--text-muted)",
+                }}
+              >
+                No results found
+              </p>
+            )}
           </div>
         )}
       </div>
 
-      {/* State Select */}
+      {/* ── State Select ── */}
       <Select
         value={selectedState}
         onValueChange={(value) => {
@@ -190,7 +310,6 @@ export default function SearchLocationBar() {
           <SelectValue placeholder="State" />
         </SelectTrigger>
         <SelectContent>
-          {/* <SelectItem value="">State</SelectItem> */}
           {indianStates.map((state) => (
             <SelectItem key={state.isoCode} value={state.name}>
               {state.name}
@@ -199,7 +318,7 @@ export default function SearchLocationBar() {
         </SelectContent>
       </Select>
 
-      {/* City Select */}
+      {/* ── City Select ── */}
       <Select
         value={selectedCity}
         onValueChange={(value) => {
@@ -210,11 +329,10 @@ export default function SearchLocationBar() {
         }}
         disabled={!selectedState}
       >
-        <SelectTrigger className="w-32 h-9 rounded-none rounded-r-md ">
+        <SelectTrigger className="w-32 h-9 rounded-none">
           <SelectValue placeholder="City" />
         </SelectTrigger>
         <SelectContent>
-          {/* <SelectItem value="">City</SelectItem> */}
           {cities.map((city) => (
             <SelectItem key={city.name} value={city.name}>
               {city.name}

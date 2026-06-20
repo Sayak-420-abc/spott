@@ -1,5 +1,5 @@
 "use client";
- 
+
 import { useConvexQuery } from "@/hooks/use-convex-query";
 import { api } from "@/convex/_generated/api";
 import React, { useRef, useState, useEffect } from "react";
@@ -23,18 +23,18 @@ import { Button } from "@/components/ui/button";
 import { createLocationSlug } from "@/lib/location-utils";
 import EventCard from "@/components/event-card";
 import { CATEGORIES } from "@/lib/data";
- 
+
 const ExplorePage = () => {
   //Fetch current user for location
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
   const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
   const router = useRouter();
- 
+
   // Recommendations state & fetching
   const getRecs = useAction(api.recommendations.getRecommendations);
   const [recommendations, setRecommendations] = useState([]);
   const [loadingRecs, setLoadingRecs] = useState(false);
- 
+
   useEffect(() => {
     const fetchRecs = async () => {
       if (!currentUser) return;
@@ -50,14 +50,14 @@ const ExplorePage = () => {
     };
     fetchRecs();
   }, [currentUser, getRecs]);
- 
+
   const { data: featuredEvents, isLoading: loadingFeatured } = useConvexQuery(
     api.explore.getFeaturedEvents,
     {
       limit: 3,
     },
   );
- 
+
   const { data: localEvents, isLoading: loadingLocal } = useConvexQuery(
     api.explore.getEventsByLocation,
     {
@@ -66,12 +66,12 @@ const ExplorePage = () => {
       limit: 4,
     },
   );
- 
+
   const { data: popularEvents, isLoading: loadingPopular } = useConvexQuery(
     api.explore.getPopularEvents,
     { limit: 6 },
   );
- 
+
   const { data: categoryCounts } = useConvexQuery(
     api.explore.getCategoryCounts,
   );

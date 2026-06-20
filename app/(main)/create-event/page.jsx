@@ -1,20 +1,19 @@
 /* eslint-disable react-hooks/incompatible-library */
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { State, City } from "country-state-city";
-import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon } from "lucide-react";
+import { CalendarIcon, Loader2, Sparkles, Image as ImageIcon, ArrowLeft } from "lucide-react";
 import { useConvexMutation, useConvexQuery } from "@/hooks/use-convex-query";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/nextjs";
 
-import { Badge } from "@/components/ui/badge";
 import {
   Popover,
   PopoverTrigger,
@@ -30,7 +29,6 @@ import {
 } from "@/components/ui/select";
 
 import UnsplashImagePicker from "@/components/unsplash-image-picker";
-import AIEventCreator from "./_components/ai-event-creator";
 import UpgradeModal from "@/components/upgrade-modal";
 import { CATEGORIES } from "@/lib/data";
 import Image from "next/image";
@@ -58,19 +56,29 @@ const eventSchema = z.object({
   themeColor: z.string().default("#8B5CF6"),
 });
 
-export default function CreateEventPage() {
+function CreateEventContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editEventId = searchParams.get("edit"); // present when editing
+  const isEditMode = !!editEventId;
+
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [upgradeReason, setUpgradeReason] = useState("limit"); // "limit" or "color"
+  const [upgradeReason, setUpgradeReason] = useState("limit");
+  const [formReady, setFormReady] = useState(!isEditMode); // true immediately if not editing
 
-  // Check if user has Pro plan
   const { has } = useAuth();
   const hasPro = has?.({ plan: "pro" });
 
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
-  const { mutate: createEvent, isLoading } = useConvexMutation(
-    api.events.createEvent,
+  const { mutate: createEvent, isLoading: isCreating } = useConvexMutation(api.events.createEvent);
+  const { mutate: editEvent, isLoading: isEditing } = useConvexMutation(api.events.editEvent);
+  const isLoading = isCreating || isEditing;
+
+  // Fetch existing event when in edit mode
+  const { data: existingEvent } = useConvexQuery(
+    api.events.getEventById,
+    isEditMode ? { eventId: editEventId } : "skip",
   );
 
   const {
@@ -79,6 +87,7 @@ export default function CreateEventPage() {
     watch,
     setValue,
     control,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(eventSchema),
@@ -95,6 +104,40 @@ export default function CreateEventPage() {
     },
   });
 
+  // Pre-fill form when existing event loads
+  useEffect(() => {
+    if (existingEvent && isEditMode) {
+      const startDate = new Date(existingEvent.startDate);
+      const endDate = new Date(existingEvent.endDate);
+
+      // Format time as HH:MM
+      const pad = (n) => String(n).padStart(2, "0");
+      const startTime = `${pad(startDate.getHours())}:${pad(startDate.getMinutes())}`;
+      const endTime = `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
+
+      reset({
+        title: existingEvent.title ?? "",
+        description: existingEvent.description ?? "",
+        category: existingEvent.category ?? "",
+        startDate: startDate,
+        endDate: endDate,
+        startTime,
+        endTime,
+        locationType: existingEvent.locationType ?? "physical",
+        venue: existingEvent.venue ?? "",
+        address: existingEvent.address ?? "",
+        city: existingEvent.city ?? "",
+        state: existingEvent.state ?? "",
+        capacity: existingEvent.capacity ?? 50,
+        ticketType: existingEvent.ticketType ?? "free",
+        ticketPrice: existingEvent.ticketPrice ?? undefined,
+        coverImage: existingEvent.coverImage ?? "",
+        themeColor: existingEvent.themeColor ?? "#8B5CF6",
+      });
+      setFormReady(true);
+    }
+  }, [existingEvent, isEditMode, reset]);
+
   const themeColor = watch("themeColor");
   const ticketType = watch("ticketType");
   const selectedState = watch("state");
@@ -110,9 +153,8 @@ export default function CreateEventPage() {
     return City.getCitiesOfState("IN", st.isoCode);
   }, [selectedState, indianStates]);
 
-  // Color presets
   const colorPresets = [
-    "#8B5CF6", // Violet (Always available / New default)
+    "#8B5CF6",
     ...(hasPro ? ["#F472B6", "#FBBF24", "#34D399", "#38BDF8", "#F87171"] : []),
   ];
 
@@ -147,21 +189,7 @@ export default function CreateEventPage() {
         return;
       }
 
-      // Check event limit for Free users
-      if (!hasPro && currentUser?.freeEventsCreated >= 1) {
-        setUpgradeReason("limit");
-        setShowUpgradeModal(true);
-        return;
-      }
-
-      // Check if trying to use custom color without Pro
-      if (data.themeColor !== "#8B5CF6" && !hasPro) {
-        setUpgradeReason("color");
-        setShowUpgradeModal(true);
-        return;
-      }
-
-      await createEvent({
+      const payload = {
         title: data.title,
         description: data.description,
         category: data.category,
@@ -180,37 +208,73 @@ export default function CreateEventPage() {
         ticketPrice: data.ticketPrice || undefined,
         coverImage: data.coverImage || undefined,
         themeColor: data.themeColor,
-      });
+      };
 
-      toast.success("Event created successfully! 🎉");
-      router.push("/my-events");
+      if (isEditMode) {
+        await editEvent({ eventId: editEventId, ...payload });
+        toast.success("Event updated successfully! ✅");
+        router.push(`/my-events/${editEventId}`);
+      } else {
+        // Check event limit for Free users
+        if (!hasPro && currentUser?.freeEventsCreated >= 1) {
+          setUpgradeReason("limit");
+          setShowUpgradeModal(true);
+          return;
+        }
+        if (data.themeColor !== "#8B5CF6" && !hasPro) {
+          setUpgradeReason("color");
+          setShowUpgradeModal(true);
+          return;
+        }
+        await createEvent(payload);
+        toast.success("Event created successfully! 🎉");
+        router.push("/my-events");
+      }
     } catch (error) {
-      toast.error(error.message || "Failed to create event");
+      toast.error(error.message || (isEditMode ? "Failed to update event" : "Failed to create event"));
     }
   };
 
-  const handleAIGenerate = (generatedData) => {
-    setValue("title", generatedData.title);
-    setValue("description", generatedData.description);
-    setValue("category", generatedData.category);
-    setValue("capacity", generatedData.suggestedCapacity);
-    setValue("ticketType", generatedData.suggestedTicketType);
-    toast.success("Event details filled! Customize as needed.");
-  };
+  const handleAIGenerate = () => {}; // removed — kept to avoid breaking any lingering refs
+
+  // Show loading state while fetching event to edit
+  if (isEditMode && !formReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b-2 border-[var(--border)]">
         <div>
-          <h1 className="text-4xl font-black font-[var(--font-display)] uppercase text-[var(--text-primary)]">Create Event</h1>
-          {!hasPro && (
+          {isEditMode && (
+            <button
+              type="button"
+              onClick={() => router.push(`/my-events/${editEventId}`)}
+              className="font-bold text-xs uppercase px-4 py-2 border-2 border-[var(--border)] bg-[var(--bg-card)] hover:bg-[var(--color-accent)] transition-all shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] inline-flex items-center gap-1.5 mb-3 cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Event
+            </button>
+          )}
+          <h1 className="text-4xl font-black font-[var(--font-display)] uppercase text-[var(--text-primary)]">
+            {isEditMode ? "Edit Event" : "Create Event"}
+          </h1>
+          {isEditMode && existingEvent && (
+            <p className="text-xs font-bold text-[var(--text-secondary)] mt-2 uppercase tracking-wider">
+              Editing: {existingEvent.title}
+            </p>
+          )}
+          {!isEditMode && !hasPro && (
             <p className="text-xs font-bold text-[var(--text-secondary)] mt-2 uppercase">
               Free Plan: {currentUser?.freeEventsCreated || 0}/1 events created
             </p>
           )}
         </div>
-        <AIEventCreator onEventGenerated={handleAIGenerate} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
@@ -260,29 +324,20 @@ export default function CreateEventPage() {
                   key={color}
                   type="button"
                   className={`w-9 h-9 border-2 border-[var(--border)] transition-all shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] cursor-pointer ${
-                    !hasPro && color !== "#8B5CF6"
-                      ? "opacity-30 cursor-not-allowed"
-                      : ""
+                    !hasPro && color !== "#8B5CF6" ? "opacity-30 cursor-not-allowed" : ""
                   }`}
                   style={{
                     backgroundColor: color,
                     outline: themeColor === color ? "3px solid var(--color-accent)" : "none",
                   }}
                   onClick={() => handleColorClick(color)}
-                  title={
-                    !hasPro && color !== "#8B5CF6"
-                      ? "Upgrade to Pro for custom colors"
-                      : ""
-                  }
+                  title={!hasPro && color !== "#8B5CF6" ? "Upgrade to Pro for custom colors" : ""}
                 />
               ))}
               {!hasPro && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setUpgradeReason("color");
-                    setShowUpgradeModal(true);
-                  }}
+                  onClick={() => { setUpgradeReason("color"); setShowUpgradeModal(true); }}
                   className="w-9 h-9 border-2 border-dashed border-[var(--border)] bg-[var(--bg-elevated)] flex items-center justify-center hover:bg-[var(--color-accent)] transition-all shadow-[2px_2px_0px_0px_var(--shadow-color)] cursor-pointer"
                   title="Unlock more colors with Pro"
                 >
@@ -343,7 +398,6 @@ export default function CreateEventPage() {
                 <input
                   type="time"
                   {...register("startTime")}
-                  placeholder="hh:mm"
                   className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-28 cursor-pointer"
                 />
               </div>
@@ -382,7 +436,6 @@ export default function CreateEventPage() {
                 <input
                   type="time"
                   {...register("endTime")}
-                  placeholder="hh:mm"
                   className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-28 cursor-pointer"
                 />
               </div>
@@ -402,7 +455,7 @@ export default function CreateEventPage() {
               name="category"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:ring-0 focus:ring-offset-0 font-bold uppercase text-xs">
+                  <SelectTrigger className="w-full bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:ring-0 focus:ring-offset-0 font-bold uppercase text-xs">
                     <SelectValue placeholder="Select Category" />
                   </SelectTrigger>
                   <SelectContent className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[4px_4px_0px_0px_var(--shadow-color)] z-50">
@@ -435,7 +488,7 @@ export default function CreateEventPage() {
                       setValue("city", "");
                     }}
                   >
-                    <SelectTrigger className="w-full bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:ring-0 focus:ring-offset-0 font-bold uppercase text-xs">
+                    <SelectTrigger className="w-full bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:ring-0 font-bold uppercase text-xs">
                       <SelectValue placeholder="Select State" />
                     </SelectTrigger>
                     <SelectContent className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[4px_4px_0px_0px_var(--shadow-color)] z-50">
@@ -458,12 +511,8 @@ export default function CreateEventPage() {
                     onValueChange={field.onChange}
                     disabled={!selectedState}
                   >
-                    <SelectTrigger className="w-full bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:ring-0 focus:ring-offset-0 font-bold uppercase text-xs disabled:opacity-50 disabled:cursor-not-allowed">
-                      <SelectValue
-                        placeholder={
-                          selectedState ? "Select City" : "Select State First"
-                        }
-                      />
+                    <SelectTrigger className="w-full bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:ring-0 font-bold uppercase text-xs disabled:opacity-50">
+                      <SelectValue placeholder={selectedState ? "Select City" : "Select State First"} />
                     </SelectTrigger>
                     <SelectContent className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[4px_4px_0px_0px_var(--shadow-color)] z-50">
                       {cities.map((c) => (
@@ -479,21 +528,19 @@ export default function CreateEventPage() {
 
             <div className="space-y-3 mt-4">
               <label className="text-xs font-black uppercase text-[var(--text-secondary)] tracking-wider">Venue Details</label>
-
               <input
                 {...register("venue")}
                 placeholder="Google Maps URL"
                 type="url"
-                className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-full"
+                className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-full"
               />
               {errors.venue && (
                 <p className="text-xs font-bold text-[var(--color-danger)] mt-1 uppercase">{errors.venue.message}</p>
               )}
-
               <input
                 {...register("address")}
                 placeholder="Full address / building details (optional)"
-                className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-full"
+                className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-full"
               />
             </div>
           </div>
@@ -505,7 +552,7 @@ export default function CreateEventPage() {
               {...register("description")}
               placeholder="Tell people about your event..."
               rows={5}
-              className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:shadow-[4px_4px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none placeholder:text-[var(--text-muted)] p-3 text-sm font-semibold w-full resize-none"
+              className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none placeholder:text-[var(--text-muted)] p-3 text-sm font-semibold w-full resize-none"
             />
             {errors.description && (
               <p className="text-xs font-bold text-[var(--color-danger)] mt-1 uppercase">
@@ -523,18 +570,17 @@ export default function CreateEventPage() {
                   type="radio"
                   value="free"
                   {...register("ticketType")}
-                  defaultChecked
                   className="w-4.5 h-4.5 accent-[var(--color-primary)] cursor-pointer"
-                />{" "}
+                />
                 Free Admission
               </label>
               <label className="flex items-center gap-2 font-black uppercase text-xs text-[var(--text-primary)] cursor-pointer">
-                <input 
-                  type="radio" 
-                  value="paid" 
-                  {...register("ticketType")} 
+                <input
+                  type="radio"
+                  value="paid"
+                  {...register("ticketType")}
                   className="w-4.5 h-4.5 accent-[var(--color-primary)] cursor-pointer"
-                />{" "}
+                />
                 Paid Ticket
               </label>
             </div>
@@ -545,7 +591,7 @@ export default function CreateEventPage() {
                   type="number"
                   placeholder="Ticket Price (₹)"
                   {...register("ticketPrice", { valueAsNumber: true })}
-                  className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-full"
+                  className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-full"
                 />
               </div>
             )}
@@ -558,7 +604,7 @@ export default function CreateEventPage() {
               type="number"
               {...register("capacity", { valueAsNumber: true })}
               placeholder="Ex: 100"
-              className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:shadow-[3px_3px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-full"
+              className="bg-[var(--bg-card)] border-2 border-[var(--border)] text-[var(--text-primary)] rounded-none h-11 px-3 shadow-[2px_2px_0px_0px_var(--shadow-color)] focus:border-[var(--color-primary)] outline-none text-xs font-bold w-full"
             />
             {errors.capacity && (
               <p className="text-xs font-bold text-[var(--color-danger)] mt-1 uppercase">{errors.capacity.message}</p>
@@ -573,10 +619,11 @@ export default function CreateEventPage() {
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Creating Event...
+                <Loader2 className="w-4 h-4 animate-spin" />
+                {isEditMode ? "Saving Changes..." : "Creating Event..."}
               </>
             ) : (
-              "Create Event"
+              isEditMode ? "Save Changes" : "Create Event"
             )}
           </button>
         </form>
@@ -601,5 +648,19 @@ export default function CreateEventPage() {
         trigger={upgradeReason}
       />
     </div>
+  );
+}
+
+export default function CreateEventPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
+        </div>
+      }
+    >
+      <CreateEventContent />
+    </Suspense>
   );
 }

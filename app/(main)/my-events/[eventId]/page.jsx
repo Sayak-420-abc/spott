@@ -19,6 +19,7 @@ import {
   Download,
   Search,
   Eye,
+  Pencil,
 } from "lucide-react";
 import { useConvexQuery, useConvexMutation } from "@/hooks/use-convex-query";
 import { api } from "@/convex/_generated/api";
@@ -190,6 +191,13 @@ export default function EventDashboardPage() {
           >
             <Eye className="w-4 h-4 text-[var(--color-primary)]" />
             View Detail
+          </button>
+          <button
+            onClick={() => router.push(`/create-event?edit=${eventId}`)}
+            className="font-bold text-xs uppercase px-4 py-2 border-2 border-[var(--border)] bg-[var(--bg-card)] hover:bg-[var(--color-primary)] hover:text-white transition-all shadow-[2px_2px_0px_0px_var(--shadow-color)] hover:translate-y-[-1px] active:translate-y-[1px] cursor-pointer inline-flex items-center justify-center gap-1.5 flex-1 md:flex-none"
+          >
+            <Pencil className="w-4 h-4" />
+            Edit Event
           </button>
           <button
             onClick={handleDelete}
