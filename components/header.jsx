@@ -4,7 +4,8 @@ import { SignedIn, SignedOut, SignInButton, SignUpButton, useAuth, UserButton } 
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useStoreUser } from '@/hooks/use-store-user';
-import { Building, Crown, Plus, Ticket, Sparkles, TrendingUp, Sun, Moon, Zap } from 'lucide-react';
+import { Building, Crown, Plus, Ticket, Sparkles, TrendingUp, Sun, Moon, Zap, Bell } from 'lucide-react';
+import NotificationDropdown from './notification-dropdown';
 import { OnboardingModal } from './onboarding-modal';
 import { useOnboarding } from '@/hooks/use-onboarding';
 import dynamic from "next/dynamic";
@@ -141,6 +142,9 @@ const Header = () => {
                 <Plus className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Create</span>
               </Link>
+
+              {/* Notification Bell */}
+              <NotificationDropdown />
 
               {/* User Avatar in thick-bordered circle */}
               <div 

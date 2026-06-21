@@ -174,4 +174,23 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_event_user", ["eventId", "userId"])
     .index("by_user_event", ["userId", "eventId"]),
+
+  // Notifications: In-app alerts for approaching events
+  notifications: defineTable({
+    userId: v.id("users"),
+    title: v.string(),
+    message: v.string(),
+    type: v.union(
+      v.literal("registered_approaching"),
+      v.literal("interest_approaching")
+    ),
+    eventId: v.id("events"),
+    eventSlug: v.optional(v.string()),
+    read: v.boolean(),
+    emailSent: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_read", ["userId", "read"])
+    .index("by_user_event_type", ["userId", "eventId", "type"]),
 });

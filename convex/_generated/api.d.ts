@@ -10,7 +10,9 @@
 
 import type * as analytics from "../analytics.js";
 import type * as attendance from "../attendance.js";
+import type * as crons from "../crons.js";
 import type * as dashboard from "../dashboard.js";
+import type * as emails from "../emails.js";
 import type * as events from "../events.js";
 import type * as explore from "../explore.js";
 import type * as friendships from "../friendships.js";
@@ -25,6 +27,7 @@ import type * as lib_recommendation_recommendationEngine from "../lib/recommenda
 import type * as lib_recommendation_semanticScore from "../lib/recommendation/semanticScore.js";
 import type * as lib_recommendation_socialScore from "../lib/recommendation/socialScore.js";
 import type * as lib_recommendation_trendScore from "../lib/recommendation/trendScore.js";
+import type * as notifications from "../notifications.js";
 import type * as recommendations from "../recommendations.js";
 import type * as registrations from "../registrations.js";
 import type * as search from "../search.js";
@@ -39,7 +42,9 @@ import type {
 declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   attendance: typeof attendance;
+  crons: typeof crons;
   dashboard: typeof dashboard;
+  emails: typeof emails;
   events: typeof events;
   explore: typeof explore;
   friendships: typeof friendships;
@@ -54,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   "lib/recommendation/semanticScore": typeof lib_recommendation_semanticScore;
   "lib/recommendation/socialScore": typeof lib_recommendation_socialScore;
   "lib/recommendation/trendScore": typeof lib_recommendation_trendScore;
+  notifications: typeof notifications;
   recommendations: typeof recommendations;
   registrations: typeof registrations;
   search: typeof search;
